@@ -1,4 +1,4 @@
-#![cfg_attr(feature = "cargo-clippy", allow(cast_lossless))]
+#![cfg_attr(feature = "cargo-clippy", allow(clippy::cast_lossless))]
 
 extern crate gl;
 extern crate image;

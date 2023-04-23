@@ -63,8 +63,8 @@ pub fn main_4_10_1() {
             for x in range_step(-10, 10, 2) {
                 translations.push(
                     Vector2 {
-                        x: x as i32 as f32 / 10.0 + offset,
-                        y: y as i32 as f32 / 10.0 + offset
+                        x: x as f32 / 10.0 + offset,
+                        y: y as f32 / 10.0 + offset
                     }
                 )
             }

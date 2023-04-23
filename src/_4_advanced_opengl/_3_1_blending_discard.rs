@@ -20,7 +20,7 @@ use crate::camera::Camera;
 use cgmath::{Matrix4, vec3,  Deg, perspective, Point3};
 use cgmath::prelude::*;
 
-use image;
+
 use image::GenericImage;
 use image::DynamicImage::*;
 
@@ -295,7 +295,7 @@ pub unsafe fn loadTexture(path: &str) -> u32 {
     let mut textureID = 0;
 
     gl::GenTextures(1, &mut textureID);
-    let img = image::open(&Path::new(path)).expect("Texture failed to load");
+    let img = image::open(Path::new(path)).expect("Texture failed to load");
     let format = match img {
         ImageLuma8(_) => gl::RED,
         ImageLumaA8(_) => gl::RG,

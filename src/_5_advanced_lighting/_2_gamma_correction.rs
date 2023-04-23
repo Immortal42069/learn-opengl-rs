@@ -13,7 +13,7 @@ use std::os::raw::c_void;
 use std::path::Path;
 use std::ffi::CStr;
 
-use image;
+
 use image::GenericImage;
 use image::DynamicImage::*;
 
@@ -238,7 +238,7 @@ pub unsafe fn loadTexture(path: &str, gammaCorrection: bool) -> u32 {
     let mut textureID = 0;
 
     gl::GenTextures(1, &mut textureID);
-    let img = image::open(&Path::new(path)).expect("Texture failed to load");
+    let img = image::open(Path::new(path)).expect("Texture failed to load");
     // need two different formats for gamma correction
     let (internalFormat, dataFormat) = match img {
         ImageLuma8(_) => (gl::RED, gl::RED),

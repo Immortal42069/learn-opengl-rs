@@ -15,7 +15,7 @@ use std::ffi::CStr;
 
 use crate::shader::Shader;
 
-use image;
+
 use image::GenericImage;
 
 use cgmath::{Matrix4, vec3,  Deg, Rad, perspective};
@@ -219,7 +219,7 @@ pub fn main_7_1() {
         let mut texture = 0;
         gl::GenTextures(1, &mut texture);
         gl::BindTexture(gl::TEXTURE_2D, texture);
-        let img = image::open(&Path::new("resources/textures/wood.png")).expect("Failed to load texture");
+        let img = image::open(Path::new("resources/textures/wood.png")).expect("Failed to load texture");
         let data = img.raw_pixels();
         gl::TexImage2D(gl::TEXTURE_2D,
                        0,

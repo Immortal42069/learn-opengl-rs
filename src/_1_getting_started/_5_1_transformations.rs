@@ -14,7 +14,7 @@ use std::ffi::CStr;
 
 use crate::shader::Shader;
 
-use image;
+
 use image::GenericImage;
 
 use cgmath::{Matrix4, vec3,  Rad};
@@ -109,7 +109,7 @@ pub fn main_1_5_1() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
-        let img = image::open(&Path::new("resources/textures/container.jpg")).expect("Failed to load texture");
+        let img = image::open(Path::new("resources/textures/container.jpg")).expect("Failed to load texture");
         let data = img.raw_pixels();
         gl::TexImage2D(gl::TEXTURE_2D,
                        0,
@@ -132,7 +132,7 @@ pub fn main_1_5_1() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
-        let img = image::open(&Path::new("resources/textures/awesomeface.png")).expect("Failed to load texture");
+        let img = image::open(Path::new("resources/textures/awesomeface.png")).expect("Failed to load texture");
         let img = img.flipv(); // flip loaded texture on the y-axis.
         let data = img.raw_pixels();
         // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA

@@ -5,11 +5,11 @@ use std::os::raw::c_void;
 use std::path::Path;
 
 use cgmath::{vec2, vec3};
-use gl;
-use image;
+
+
 use image::DynamicImage::*;
 use image::GenericImage;
-use tobj;
+
 
 use crate::mesh::{ Mesh, Texture, Vertex };
 use crate::shader::Shader;
@@ -115,7 +115,7 @@ unsafe fn TextureFromFile(path: &str, directory: &str) -> u32 {
     let mut textureID = 0;
     gl::GenTextures(1, &mut textureID);
 
-    let img = image::open(&Path::new(&filename)).expect("Texture failed to load");
+    let img = image::open(Path::new(&filename)).expect("Texture failed to load");
     let img = img.flipv();
     let format = match img {
         ImageLuma8(_) => gl::RED,

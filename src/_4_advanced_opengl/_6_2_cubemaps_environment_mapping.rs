@@ -16,7 +16,7 @@ use self::gl::types::*;
 use cgmath::{Matrix4,  Deg, perspective, Point3};
 use cgmath::prelude::*;
 
-use image;
+
 use image::GenericImage;
 
 use crate::common::{process_events, processInput};
@@ -312,7 +312,7 @@ unsafe fn loadCubemap(faces: &[&str]) -> u32 {
     gl::BindTexture(gl::TEXTURE_CUBE_MAP, textureID);
 
     for (i, face) in faces.iter().enumerate() {
-        let img = image::open(&Path::new(face)).expect("Cubemap texture failed to load");
+        let img = image::open(Path::new(face)).expect("Cubemap texture failed to load");
 
         let data = img.raw_pixels();
         gl::TexImage2D(

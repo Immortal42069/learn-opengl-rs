@@ -8,7 +8,7 @@ use std::ptr;
 
 use cgmath::{ Vector3, Vector2 };
 use cgmath::prelude::*;
-use gl;
+
 
 use crate::shader::Shader;
 

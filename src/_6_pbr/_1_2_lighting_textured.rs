@@ -158,11 +158,11 @@ pub fn main_6_1_2() {
             // render rows*column number of spheres with varying metallic/roughness values scaled by rows and columns respectively
             let mut model: Matrix4<f32>;
             for row in 0..nrRows {
-                shader.setFloat(c_str!("metallic"), row as i32 as f32 / nrRows as f32);
+                shader.setFloat(c_str!("metallic"), row as f32 / nrRows as f32);
                 for col in 0..nrColumns {
                     // we clamp the roughness to 0.025 - 1.0 as perfectly smooth surfaces (roughness of 0.0) tend to look a bit off
                     // on direct lighting.
-                    shader.setFloat(c_str!("roughness"), num::clamp(col as i32 as f32 / nrColumns as f32, 0.05, 1.0));
+                    shader.setFloat(c_str!("roughness"), num::clamp(col as f32 / nrColumns as f32, 0.05, 1.0));
 
                     let model = Matrix4::from_translation(vec3(
                         (col - (nrColumns / 2)) as f32 * spacing,

@@ -6,11 +6,11 @@ use std::os::raw::c_void;
 use std::path::Path;
 use std::sync::mpsc::Receiver;
 
-use gl;
+
 extern crate glfw;
 use self::glfw::{Key, Action};
 
-use image;
+
 use image::GenericImage;
 use image::DynamicImage::*;
 
@@ -83,7 +83,7 @@ pub unsafe fn loadTexture(path: &str) -> u32 {
     let mut textureID = 0;
 
     gl::GenTextures(1, &mut textureID);
-    let img = image::open(&Path::new(path)).expect("Texture failed to load");
+    let img = image::open(Path::new(path)).expect("Texture failed to load");
     let format = match img {
         ImageLuma8(_) => gl::RED,
         ImageLumaA8(_) => gl::RG,
