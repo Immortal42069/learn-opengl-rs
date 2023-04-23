@@ -1,10 +1,10 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_snake_case)]
 
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
-use std::ffi::CStr;
+use std::ptr;
 
 extern crate glfw;
 use self::glfw::Context;
@@ -12,12 +12,12 @@ use self::glfw::Context;
 extern crate gl;
 use self::gl::types::*;
 
-use cgmath::{Matrix4, vec3, Deg, perspective, Point3};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec3, Deg, Matrix4, Point3};
 
-use crate::common::{process_events, processInput};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{processInput, process_events};
+use crate::shader::Shader;
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -47,7 +47,8 @@ pub fn main_4_8() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -69,56 +70,31 @@ pub fn main_4_8() {
 
         // build and compile shaders
         // -------------------------
-        let shaderRed = Shader::new("src/_4_advanced_opengl/shaders/8.advanced_glsl.vs", "src/_4_advanced_opengl/shaders/8.red.fs");
-        let shaderGreen = Shader::new("src/_4_advanced_opengl/shaders/8.advanced_glsl.vs", "src/_4_advanced_opengl/shaders/8.green.fs");
-        let shaderBlue = Shader::new("src/_4_advanced_opengl/shaders/8.advanced_glsl.vs", "src/_4_advanced_opengl/shaders/8.blue.fs");
-        let shaderYellow = Shader::new("src/_4_advanced_opengl/shaders/8.advanced_glsl.vs", "src/_4_advanced_opengl/shaders/8.yellow.fs");
+        let shaderRed =
+            Shader::new("src/_4_advanced_opengl/shaders/8.advanced_glsl.vs", "src/_4_advanced_opengl/shaders/8.red.fs");
+        let shaderGreen = Shader::new(
+            "src/_4_advanced_opengl/shaders/8.advanced_glsl.vs",
+            "src/_4_advanced_opengl/shaders/8.green.fs",
+        );
+        let shaderBlue = Shader::new(
+            "src/_4_advanced_opengl/shaders/8.advanced_glsl.vs",
+            "src/_4_advanced_opengl/shaders/8.blue.fs",
+        );
+        let shaderYellow = Shader::new(
+            "src/_4_advanced_opengl/shaders/8.advanced_glsl.vs",
+            "src/_4_advanced_opengl/shaders/8.yellow.fs",
+        );
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         let cubeVertices: [f32; 108] = [
             // positions
-            -0.5, -0.5, -0.5,
-             0.5, -0.5, -0.5,
-             0.5,  0.5, -0.5,
-             0.5,  0.5, -0.5,
-            -0.5,  0.5, -0.5,
-            -0.5, -0.5, -0.5,
-
-            -0.5, -0.5,  0.5,
-             0.5, -0.5,  0.5,
-             0.5,  0.5,  0.5,
-             0.5,  0.5,  0.5,
-            -0.5,  0.5,  0.5,
-            -0.5, -0.5,  0.5,
-
-            -0.5,  0.5,  0.5,
-            -0.5,  0.5, -0.5,
-            -0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5,
-            -0.5, -0.5,  0.5,
-            -0.5,  0.5,  0.5,
-
-             0.5,  0.5,  0.5,
-             0.5,  0.5, -0.5,
-             0.5, -0.5, -0.5,
-             0.5, -0.5, -0.5,
-             0.5, -0.5,  0.5,
-             0.5,  0.5,  0.5,
-
-            -0.5, -0.5, -0.5,
-             0.5, -0.5, -0.5,
-             0.5, -0.5,  0.5,
-             0.5, -0.5,  0.5,
-            -0.5, -0.5,  0.5,
-            -0.5, -0.5, -0.5,
-
-            -0.5,  0.5, -0.5,
-             0.5,  0.5, -0.5,
-             0.5,  0.5,  0.5,
-             0.5,  0.5,  0.5,
-            -0.5,  0.5,  0.5,
-            -0.5,  0.5, -0.5,
+            -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+            -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5,
+            -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+            0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5,
+            -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
+            0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5,
         ];
         // cube VAO
         let (mut cubeVAO, mut cubeVBO) = (0, 0);
@@ -126,10 +102,12 @@ pub fn main_4_8() {
         gl::GenBuffers(1, &mut cubeVBO);
         gl::BindVertexArray(cubeVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, cubeVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &cubeVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &cubeVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         let stride = 3 * mem::size_of::<GLfloat>() as GLsizei;
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
@@ -155,9 +133,14 @@ pub fn main_4_8() {
         gl::BindBufferRange(gl::UNIFORM_BUFFER, 0, uboMatrices, 0, 2 * 2 * mem::size_of::<Matrix4<f32>>() as isize);
 
         // store the projection matrix (we only do this once now) (note: we're not using zoom anymore by changing the FoV)
-        let projection: Matrix4<f32> = perspective(Deg(45.0), SCR_WIDTH as f32 / SCR_HEIGHT as f32 , 0.1, 100.0);
+        let projection: Matrix4<f32> = perspective(Deg(45.0), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
         gl::BindBuffer(gl::UNIFORM_BUFFER, uboMatrices);
-        gl::BufferSubData(gl::UNIFORM_BUFFER, 0, mem::size_of::<Matrix4<f32>>() as isize, projection.as_ptr() as *const c_void);
+        gl::BufferSubData(
+            gl::UNIFORM_BUFFER,
+            0,
+            mem::size_of::<Matrix4<f32>>() as isize,
+            projection.as_ptr() as *const c_void,
+        );
         gl::BindBuffer(gl::UNIFORM_BUFFER, 0);
 
         (shaderRed, shaderGreen, shaderBlue, shaderYellow, cubeVBO, cubeVAO, uboMatrices)

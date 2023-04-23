@@ -2,9 +2,8 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
-
-use cgmath::vec3;
 use cgmath::prelude::*;
+use cgmath::vec3;
 
 type Point3 = cgmath::Point3<f32>;
 type Vector3 = cgmath::Vector3<f32>;
@@ -48,7 +47,7 @@ impl Default for Camera {
         let mut camera = Camera {
             Position: Point3::new(0.0, 0.0, 0.0),
             Front: vec3(0.0, 0.0, -1.0),
-            Up: Vector3::zero(), // initialized later
+            Up: Vector3::zero(),    // initialized later
             Right: Vector3::zero(), // initialized later
             WorldUp: Vector3::unit_y(),
             Yaw: YAW,

@@ -12,13 +12,13 @@ use std::mem;
 use std::os::raw::c_void;
 use std::ptr;
 
-use crate::common::{process_events, processInput};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{processInput, process_events};
 use crate::model::Model;
+use crate::shader::Shader;
 
-use cgmath::{Matrix4, vec3, Point3, Vector4, Deg, perspective};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec3, Deg, Matrix4, Point3, Vector4};
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -48,7 +48,8 @@ pub fn main_4_10_3() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -72,10 +73,12 @@ pub fn main_4_10_3() {
         // -------------------------
         let asteroidShader = Shader::new(
             "src/_4_advanced_opengl/shaders/10.3.asteroids.vs",
-            "src/_4_advanced_opengl/shaders/10.3.asteroids.fs");
+            "src/_4_advanced_opengl/shaders/10.3.asteroids.fs",
+        );
         let planetShader = Shader::new(
             "src/_4_advanced_opengl/shaders/10.3.planet.vs",
-            "src/_4_advanced_opengl/shaders/10.3.planet.fs");
+            "src/_4_advanced_opengl/shaders/10.3.planet.fs",
+        );
 
         // load models
         // -----------
@@ -120,7 +123,8 @@ pub fn main_4_10_3() {
             gl::ARRAY_BUFFER,
             (amount * mem::size_of::<Matrix4<f32>>()) as isize,
             &modelMatrices[0] as *const Matrix4<f32> as *const c_void,
-            gl::STATIC_DRAW);
+            gl::STATIC_DRAW,
+        );
 
         // set transformation matrices as an instance vertex attribute (with divisor 1)
         // note: we're cheating a little by taking the, now publicly declared, VAO of the model's mesh(es) and adding new vertexAttribPointers
@@ -199,7 +203,13 @@ pub fn main_4_10_3() {
 
             for mesh in &rock.meshes {
                 gl::BindVertexArray(mesh.VAO);
-                gl::DrawElementsInstanced(gl::TRIANGLES, mesh.indices.len() as i32, gl::UNSIGNED_INT, ptr::null(), amount as i32);
+                gl::DrawElementsInstanced(
+                    gl::TRIANGLES,
+                    mesh.indices.len() as i32,
+                    gl::UNSIGNED_INT,
+                    ptr::null(),
+                    amount as i32,
+                );
                 gl::BindVertexArray(0);
             }
         }
@@ -209,5 +219,4 @@ pub fn main_4_10_3() {
         window.swap_buffers();
         glfw.poll_events();
     }
-
 }

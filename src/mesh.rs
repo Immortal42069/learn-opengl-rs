@@ -6,9 +6,8 @@ use std::mem::size_of;
 use std::os::raw::c_void;
 use std::ptr;
 
-use cgmath::{ Vector3, Vector2 };
 use cgmath::prelude::*;
-
+use cgmath::{Vector2, Vector3};
 
 use crate::shader::Shader;
 
@@ -63,8 +62,12 @@ pub struct Mesh {
 impl Mesh {
     pub fn new(vertices: Vec<Vertex>, indices: Vec<u32>, textures: Vec<Texture>) -> Mesh {
         let mut mesh = Mesh {
-            vertices, indices, textures,
-            VAO: 0, VBO: 0, EBO: 0
+            vertices,
+            indices,
+            textures,
+            VAO: 0,
+            VBO: 0,
+            EBO: 0,
         };
 
         // now that we have all the required data, set the vertex buffers and its attribute pointers.
@@ -75,19 +78,19 @@ impl Mesh {
     /// render the mesh
     pub unsafe fn Draw(&self, shader: &Shader) {
         // bind appropriate textures
-        let mut diffuseNr  = 0;
+        let mut diffuseNr = 0;
         let mut specularNr = 0;
-        let mut normalNr   = 0;
-        let mut heightNr   = 0;
+        let mut normalNr = 0;
+        let mut heightNr = 0;
         for (i, texture) in self.textures.iter().enumerate() {
             gl::ActiveTexture(gl::TEXTURE0 + i as u32); // active proper texture unit before binding
-            // retrieve texture number (the N in diffuse_textureN)
+                                                        // retrieve texture number (the N in diffuse_textureN)
             let name = &texture.type_;
             let number = match name.as_str() {
                 "texture_diffuse" => {
                     diffuseNr += 1;
                     diffuseNr
-                },
+                }
                 "texture_specular" => {
                     specularNr += 1;
                     specularNr
@@ -100,7 +103,7 @@ impl Mesh {
                     heightNr += 1;
                     heightNr
                 }
-                _ => panic!("unknown texture type")
+                _ => panic!("unknown texture type"),
             };
             // now set the sampler to the correct texture unit
             let sampler = CString::new(format!("{}{}", name, number)).unwrap();

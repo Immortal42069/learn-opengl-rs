@@ -6,17 +6,17 @@ use self::glfw::Context;
 extern crate gl;
 use self::gl::types::*;
 
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
-use std::ffi::CStr;
+use std::ptr;
 
-use crate::common::{process_events, processInput};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{processInput, process_events};
+use crate::shader::Shader;
 
-use cgmath::{Matrix4, vec3, Point3, Deg, perspective};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec3, Deg, Matrix4, Point3};
 
 // settings
 const SCR_WIDTH: u32 = 800;
@@ -49,7 +49,8 @@ pub fn main_2_2_1() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -73,55 +74,24 @@ pub fn main_2_2_1() {
         // ------------------------------------
         let lightingShader = Shader::new(
             "src/_2_lighting/shaders/2.1.basic_lighting.vs",
-            "src/_2_lighting/shaders/2.1.basic_lighting.fs");
-        let lampShader = Shader::new(
-            "src/_2_lighting/shaders/2.1.lamp.vs",
-            "src/_2_lighting/shaders/2.1.lamp.fs");
+            "src/_2_lighting/shaders/2.1.basic_lighting.fs",
+        );
+        let lampShader = Shader::new("src/_2_lighting/shaders/2.1.lamp.vs", "src/_2_lighting/shaders/2.1.lamp.fs");
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         let vertices: [f32; 216] = [
-            -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
-             0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
-             0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
-             0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
-            -0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
-            -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
-
-            -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
-             0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
-             0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
-             0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
-            -0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
-            -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
-
-            -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
-            -0.5,  0.5, -0.5, -1.0,  0.0,  0.0,
-            -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
-            -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
-            -0.5, -0.5,  0.5, -1.0,  0.0,  0.0,
-            -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
-
-             0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
-             0.5,  0.5, -0.5,  1.0,  0.0,  0.0,
-             0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
-             0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
-             0.5, -0.5,  0.5,  1.0,  0.0,  0.0,
-             0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
-
-            -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
-             0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
-             0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
-             0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
-            -0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
-            -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
-
-            -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
-             0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
-             0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
-             0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
-            -0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
-            -0.5,  0.5, -0.5,  0.0,  1.0,  0.0
+            -0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 0.5,
+            0.5, -0.5, 0.0, 0.0, -1.0, -0.5, 0.5, -0.5, 0.0, 0.0, -1.0, -0.5, -0.5, -0.5, 0.0, 0.0, -1.0, -0.5, -0.5,
+            0.5, 0.0, 0.0, 1.0, 0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 0.5, 0.5, 0.5, 0.0, 0.0,
+            1.0, -0.5, 0.5, 0.5, 0.0, 0.0, 1.0, -0.5, -0.5, 0.5, 0.0, 0.0, 1.0, -0.5, 0.5, 0.5, -1.0, 0.0, 0.0, -0.5,
+            0.5, -0.5, -1.0, 0.0, 0.0, -0.5, -0.5, -0.5, -1.0, 0.0, 0.0, -0.5, -0.5, -0.5, -1.0, 0.0, 0.0, -0.5, -0.5,
+            0.5, -1.0, 0.0, 0.0, -0.5, 0.5, 0.5, -1.0, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0, 0.0, 0.0, 0.5, 0.5, -0.5, 1.0,
+            0.0, 0.0, 0.5, -0.5, -0.5, 1.0, 0.0, 0.0, 0.5, -0.5, -0.5, 1.0, 0.0, 0.0, 0.5, -0.5, 0.5, 1.0, 0.0, 0.0,
+            0.5, 0.5, 0.5, 1.0, 0.0, 0.0, -0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 0.5, -0.5,
+            0.5, 0.0, -1.0, 0.0, 0.5, -0.5, 0.5, 0.0, -1.0, 0.0, -0.5, -0.5, 0.5, 0.0, -1.0, 0.0, -0.5, -0.5, -0.5,
+            0.0, -1.0, 0.0, -0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 0.5, 0.5, 0.5, 0.0, 1.0,
+            0.0, 0.5, 0.5, 0.5, 0.0, 1.0, 0.0, -0.5, 0.5, 0.5, 0.0, 1.0, 0.0, -0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
         ];
         // first, configure the cube's VAO (and VBO)
         let (mut VBO, mut cubeVAO) = (0, 0);
@@ -131,10 +101,12 @@ pub fn main_2_2_1() {
         gl::BindVertexArray(cubeVAO);
 
         gl::BindBuffer(gl::ARRAY_BUFFER, VBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &vertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &vertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
 
         let stride = 6 * mem::size_of::<GLfloat>() as GLsizei;
         // position attribute
@@ -143,7 +115,6 @@ pub fn main_2_2_1() {
         // normal attribute
         gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, stride, (3 * mem::size_of::<GLfloat>()) as *const c_void);
         gl::EnableVertexAttribArray(1);
-
 
         // second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
         let mut lightVAO = 0;
@@ -158,7 +129,6 @@ pub fn main_2_2_1() {
 
         (lightingShader, lampShader, VBO, cubeVAO, lightVAO)
     };
-
 
     // render loop
     // -----------
@@ -177,7 +147,6 @@ pub fn main_2_2_1() {
         // -----
         processInput(&mut window, deltaTime, &mut camera);
 
-
         // render
         // ------
         unsafe {
@@ -191,7 +160,8 @@ pub fn main_2_2_1() {
             lightingShader.setVector3(c_str!("lightPos"), &lightPos);
 
             // view/projection transformations
-            let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
+            let projection: Matrix4<f32> =
+                perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
             let view = camera.GetViewMatrix();
             lightingShader.setMat4(c_str!("projection"), &projection);
             lightingShader.setMat4(c_str!("view"), &view);
@@ -204,13 +174,12 @@ pub fn main_2_2_1() {
             gl::BindVertexArray(cubeVAO);
             gl::DrawArrays(gl::TRIANGLES, 0, 36);
 
-
             // also draw the lamp object
             lampShader.useProgram();
             lampShader.setMat4(c_str!("projection"), &projection);
             lampShader.setMat4(c_str!("view"), &view);
             model = Matrix4::from_translation(lightPos);
-            model = model * Matrix4::from_scale(0.2);  // a smaller cube
+            model = model * Matrix4::from_scale(0.2); // a smaller cube
             lampShader.setMat4(c_str!("model"), &model);
 
             gl::BindVertexArray(lightVAO);

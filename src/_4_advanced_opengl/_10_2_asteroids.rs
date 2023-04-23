@@ -9,13 +9,13 @@ use self::rand::Rng;
 
 use std::ffi::CStr;
 
-use crate::common::{process_events, processInput};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{processInput, process_events};
 use crate::model::Model;
+use crate::shader::Shader;
 
-use cgmath::{Matrix4, vec3, Point3, Deg, perspective};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec3, Deg, Matrix4, Point3};
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -45,7 +45,8 @@ pub fn main_4_10_2() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -69,7 +70,8 @@ pub fn main_4_10_2() {
         // -------------------------
         let shader = Shader::new(
             "src/_4_advanced_opengl/shaders/10.2.instancing.vs",
-            "src/_4_advanced_opengl/shaders/10.2.instancing.fs");
+            "src/_4_advanced_opengl/shaders/10.2.instancing.fs",
+        );
 
         // load models
         // -----------
@@ -132,7 +134,8 @@ pub fn main_4_10_2() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
             // configure transformation matrices
-            let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 1000.0);
+            let projection: Matrix4<f32> =
+                perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 1000.0);
             let view = camera.GetViewMatrix();
             shader.useProgram();
             shader.setMat4(c_str!("projection"), &projection);
@@ -156,5 +159,4 @@ pub fn main_4_10_2() {
         window.swap_buffers();
         glfw.poll_events();
     }
-
 }

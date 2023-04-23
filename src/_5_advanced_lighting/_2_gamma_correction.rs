@@ -2,28 +2,27 @@
 #![allow(non_snake_case)]
 
 extern crate glfw;
-use self::glfw::{Context, Key, Action};
+use self::glfw::{Action, Context, Key};
 
 extern crate gl;
 use self::gl::types::*;
 
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
 use std::path::Path;
-use std::ffi::CStr;
+use std::ptr;
 
-
-use image::GenericImage;
 use image::DynamicImage::*;
+use image::GenericImage;
 
-use crate::common::process_events;
-use crate::shader::Shader;
 use crate::camera::Camera;
 use crate::camera::Camera_Movement::*;
+use crate::common::process_events;
+use crate::shader::Shader;
 
-use cgmath::{Matrix4, vec3, Vector3, Deg, perspective, Point3};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec3, Deg, Matrix4, Point3, Vector3};
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -56,7 +55,8 @@ pub fn main_5_2() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -82,19 +82,16 @@ pub fn main_5_2() {
         // ------------------------------------
         let shader = Shader::new(
             "src/_5_advanced_lighting/shaders/2.gamma_correction.vs",
-            "src/_5_advanced_lighting/shaders/2.gamma_correction.fs");
+            "src/_5_advanced_lighting/shaders/2.gamma_correction.fs",
+        );
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         let planeVertices: [f32; 48] = [
             // positions         // normals      // texcoords
-             10.0, -0.5,  10.0,  0.0, 1.0, 0.0,  10.0,  0.0,
-            -10.0, -0.5,  10.0,  0.0, 1.0, 0.0,   0.0,  0.0,
-            -10.0, -0.5, -10.0,  0.0, 1.0, 0.0,   0.0, 10.0,
-
-             10.0, -0.5,  10.0,  0.0, 1.0, 0.0,  10.0,  0.0,
-            -10.0, -0.5, -10.0,  0.0, 1.0, 0.0,   0.0, 10.0,
-             10.0, -0.5, -10.0,  0.0, 1.0, 0.0,  10.0, 10.0
+            10.0, -0.5, 10.0, 0.0, 1.0, 0.0, 10.0, 0.0, -10.0, -0.5, 10.0, 0.0, 1.0, 0.0, 0.0, 0.0, -10.0, -0.5, -10.0,
+            0.0, 1.0, 0.0, 0.0, 10.0, 10.0, -0.5, 10.0, 0.0, 1.0, 0.0, 10.0, 0.0, -10.0, -0.5, -10.0, 0.0, 1.0, 0.0,
+            0.0, 10.0, 10.0, -0.5, -10.0, 0.0, 1.0, 0.0, 10.0, 10.0,
         ];
         // plane VAO
         let (mut planeVAO, mut planeVBO) = (0, 0);
@@ -102,10 +99,12 @@ pub fn main_5_2() {
         gl::GenBuffers(1, &mut planeVBO);
         gl::BindVertexArray(planeVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, planeVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (planeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &planeVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (planeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &planeVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         gl::EnableVertexAttribArray(0);
         let stride = 8 * mem::size_of::<GLfloat>() as GLsizei;
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
@@ -133,14 +132,14 @@ pub fn main_5_2() {
     let lightPositions: [Vector3<f32>; 4] = [
         vec3(-3.0, 0.0, 0.0),
         vec3(-1.0, 0.0, 0.0),
-        vec3 (1.0, 0.0, 0.0),
-        vec3 (3.0, 0.0, 0.0)
+        vec3(1.0, 0.0, 0.0),
+        vec3(3.0, 0.0, 0.0),
     ];
     let lightColors: [Vector3<f32>; 4] = [
         vec3(0.25, 0.25, 0.25),
         vec3(0.50, 0.50, 0.50),
         vec3(0.75, 0.75, 0.75),
-        vec3(1.00, 1.00, 1.00)
+        vec3(1.00, 1.00, 1.00),
     ];
 
     // render loop
@@ -168,7 +167,8 @@ pub fn main_5_2() {
 
             // draw objects
             shader.useProgram();
-            let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32 , 0.1, 100.0);
+            let projection: Matrix4<f32> =
+                perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
             let view = camera.GetViewMatrix();
             shader.setMat4(c_str!("projection"), &projection);
             shader.setMat4(c_str!("view"), &view);
@@ -186,7 +186,14 @@ pub fn main_5_2() {
             // floor
             gl::BindVertexArray(planeVAO);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, if gammaEnabled { floorTextureGammaCorrected } else { floorTexture });
+            gl::BindTexture(
+                gl::TEXTURE_2D,
+                if gammaEnabled {
+                    floorTextureGammaCorrected
+                } else {
+                    floorTexture
+                },
+            );
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }
 
@@ -205,7 +212,13 @@ pub fn main_5_2() {
 }
 
 // NOTE: not the same version as in common.rs
-pub fn processInput(window: &mut glfw::Window, deltaTime: f32, camera: &mut Camera, gammaEnabled: &mut bool, gammaKeyPressed: &mut bool) {
+pub fn processInput(
+    window: &mut glfw::Window,
+    deltaTime: f32,
+    camera: &mut Camera,
+    gammaEnabled: &mut bool,
+    gammaKeyPressed: &mut bool,
+) {
     if window.get_key(Key::Escape) == Action::Press {
         window.set_should_close(true)
     }
@@ -226,7 +239,14 @@ pub fn processInput(window: &mut glfw::Window, deltaTime: f32, camera: &mut Came
     if window.get_key(Key::Space) == Action::Press && !(*gammaKeyPressed) {
         *gammaEnabled = !(*gammaEnabled);
         *gammaKeyPressed = true;
-        println!("{}", if *gammaEnabled { "Gamma Enabled" } else { "Gamma disabled" })
+        println!(
+            "{}",
+            if *gammaEnabled {
+                "Gamma Enabled"
+            } else {
+                "Gamma disabled"
+            }
+        )
     }
     if window.get_key(Key::Space) == Action::Release {
         *gammaKeyPressed = false;
@@ -250,8 +270,17 @@ pub unsafe fn loadTexture(path: &str, gammaCorrection: bool) -> u32 {
     let data = img.raw_pixels();
 
     gl::BindTexture(gl::TEXTURE_2D, textureID);
-    gl::TexImage2D(gl::TEXTURE_2D, 0, internalFormat as i32, img.width() as i32, img.height() as i32,
-        0, dataFormat, gl::UNSIGNED_BYTE, &data[0] as *const u8 as *const c_void);
+    gl::TexImage2D(
+        gl::TEXTURE_2D,
+        0,
+        internalFormat as i32,
+        img.width() as i32,
+        img.height() as i32,
+        0,
+        dataFormat,
+        gl::UNSIGNED_BYTE,
+        &data[0] as *const u8 as *const c_void,
+    );
     gl::GenerateMipmap(gl::TEXTURE_2D);
 
     gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);

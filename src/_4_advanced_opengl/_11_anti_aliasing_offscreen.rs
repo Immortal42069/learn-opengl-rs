@@ -7,17 +7,17 @@ use self::glfw::Context;
 extern crate gl;
 use self::gl::types::*;
 
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
-use std::ffi::CStr;
+use std::ptr;
 
-use crate::common::{process_events, processInput};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{processInput, process_events};
+use crate::shader::Shader;
 
-use cgmath::{Matrix4,  Deg, perspective, Point3};
 use cgmath::prelude::*;
+use cgmath::{perspective, Deg, Matrix4, Point3};
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -47,7 +47,8 @@ pub fn main_4_11() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     // query framebuffer size as it might be quite different from the requested size on Retina displays
@@ -74,66 +75,27 @@ pub fn main_4_11() {
         // ------------------------------------
         let shader = Shader::new(
             "src/_4_advanced_opengl/shaders/11.anti_aliasing.vs",
-            "src/_4_advanced_opengl/shaders/11.anti_aliasing.fs");
-        let screenShader = Shader::new(
-            "src/_4_advanced_opengl/shaders/11.aa_post.vs",
-            "src/_4_advanced_opengl/shaders/11.aa_post.fs");
+            "src/_4_advanced_opengl/shaders/11.anti_aliasing.fs",
+        );
+        let screenShader =
+            Shader::new("src/_4_advanced_opengl/shaders/11.aa_post.vs", "src/_4_advanced_opengl/shaders/11.aa_post.fs");
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         let cubeVertices: [f32; 108] = [
-             // positions
-             -0.5, -0.5, -0.5,
-              0.5, -0.5, -0.5,
-              0.5,  0.5, -0.5,
-              0.5,  0.5, -0.5,
-             -0.5,  0.5, -0.5,
-             -0.5, -0.5, -0.5,
-
-             -0.5, -0.5,  0.5,
-              0.5, -0.5,  0.5,
-              0.5,  0.5,  0.5,
-              0.5,  0.5,  0.5,
-             -0.5,  0.5,  0.5,
-             -0.5, -0.5,  0.5,
-
-             -0.5,  0.5,  0.5,
-             -0.5,  0.5, -0.5,
-             -0.5, -0.5, -0.5,
-             -0.5, -0.5, -0.5,
-             -0.5, -0.5,  0.5,
-             -0.5,  0.5,  0.5,
-
-              0.5,  0.5,  0.5,
-              0.5,  0.5, -0.5,
-              0.5, -0.5, -0.5,
-              0.5, -0.5, -0.5,
-              0.5, -0.5,  0.5,
-              0.5,  0.5,  0.5,
-
-             -0.5, -0.5, -0.5,
-              0.5, -0.5, -0.5,
-              0.5, -0.5,  0.5,
-              0.5, -0.5,  0.5,
-             -0.5, -0.5,  0.5,
-             -0.5, -0.5, -0.5,
-
-             -0.5,  0.5, -0.5,
-              0.5,  0.5, -0.5,
-              0.5,  0.5,  0.5,
-              0.5,  0.5,  0.5,
-             -0.5,  0.5,  0.5,
-             -0.5,  0.5, -0.5,
+            // positions
+            -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+            -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5,
+            -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+            0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5,
+            -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
+            0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5,
         ];
-        let quadVertices: [f32; 24] = [ // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+        let quadVertices: [f32; 24] = [
+            // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
             // positions // texCoords
-            -1.0,  1.0,  0.0, 1.0,
-            -1.0, -1.0,  0.0, 0.0,
-             1.0, -1.0,  1.0, 0.0,
-
-            -1.0,  1.0,  0.0, 1.0,
-             1.0, -1.0,  1.0, 0.0,
-             1.0,  1.0,  1.0, 1.0
+            -1.0, 1.0, 0.0, 1.0, -1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, -1.0, 1.0, 0.0,
+            1.0, 1.0, 1.0, 1.0,
         ];
         // setup cube VAO
         let (mut cubeVAO, mut cubeVBO) = (0, 0);
@@ -141,10 +103,12 @@ pub fn main_4_11() {
         gl::GenBuffers(1, &mut cubeVBO);
         gl::BindVertexArray(cubeVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, cubeVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &cubeVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &cubeVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         let stride = 3 * mem::size_of::<GLfloat>() as GLsizei;
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
@@ -154,10 +118,12 @@ pub fn main_4_11() {
         gl::GenBuffers(1, &mut quadVBO);
         gl::BindVertexArray(quadVBO);
         gl::BindBuffer(gl::ARRAY_BUFFER, quadVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (quadVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &quadVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (quadVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &quadVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         gl::EnableVertexAttribArray(0);
         let stride = 4 * mem::size_of::<GLfloat>() as GLsizei;
         gl::VertexAttribPointer(0, 2, gl::FLOAT, gl::FALSE, stride, ptr::null());
@@ -175,7 +141,13 @@ pub fn main_4_11() {
         gl::BindTexture(gl::TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled);
         gl::TexImage2DMultisample(gl::TEXTURE_2D_MULTISAMPLE, 4, gl::RGB, scr_width, scr_height, gl::TRUE);
         gl::BindTexture(gl::TEXTURE_2D_MULTISAMPLE, 0);
-        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled, 0);
+        gl::FramebufferTexture2D(
+            gl::FRAMEBUFFER,
+            gl::COLOR_ATTACHMENT0,
+            gl::TEXTURE_2D_MULTISAMPLE,
+            textureColorBufferMultiSampled,
+            0,
+        );
         // create a (also multisampled) renderbuffer object for depth and stencil attachments
         let mut rbo = 0;
         gl::GenRenderbuffers(1, &mut rbo);
@@ -197,10 +169,20 @@ pub fn main_4_11() {
         let mut screenTexture = 0;
         gl::GenTextures(1, &mut screenTexture);
         gl::BindTexture(gl::TEXTURE_2D, screenTexture);
-        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as i32, scr_width, scr_height, 0, gl::RGB, gl::UNSIGNED_BYTE, ptr::null());
+        gl::TexImage2D(
+            gl::TEXTURE_2D,
+            0,
+            gl::RGB as i32,
+            scr_width,
+            scr_height,
+            0,
+            gl::RGB,
+            gl::UNSIGNED_BYTE,
+            ptr::null(),
+        );
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
-        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, screenTexture, 0);	// we only need a color buffer
+        gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, screenTexture, 0); // we only need a color buffer
 
         if gl::CheckFramebufferStatus(gl::FRAMEBUFFER) != gl::FRAMEBUFFER_COMPLETE {
             println!("ERROR::FRAMEBUFFER:: Intermediate framebuffer is not complete!");
@@ -243,7 +225,8 @@ pub fn main_4_11() {
 
             // set transformation matrices
             shader.useProgram();
-            let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32 , 0.1, 100.0);
+            let projection: Matrix4<f32> =
+                perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
             shader.setMat4(c_str!("projection"), &projection);
             shader.setMat4(c_str!("view"), &camera.GetViewMatrix());
             shader.setMat4(c_str!("model"), &Matrix4::identity());
@@ -254,7 +237,18 @@ pub fn main_4_11() {
             // 2. now blit multisampled buffer(s) to normal colorbuffer of intermediate FBO. Image is stored in screenTexture
             gl::BindFramebuffer(gl::READ_FRAMEBUFFER, framebuffer);
             gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, intermediateFBO);
-            gl::BlitFramebuffer(0, 0, scr_width, scr_height, 0, 0, scr_width, scr_height, gl::COLOR_BUFFER_BIT, gl::NEAREST);
+            gl::BlitFramebuffer(
+                0,
+                0,
+                scr_width,
+                scr_height,
+                0,
+                0,
+                scr_width,
+                scr_height,
+                gl::COLOR_BUFFER_BIT,
+                gl::NEAREST,
+            );
 
             // 3. now render quad with scene's visuals as its texture image
             gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
@@ -266,7 +260,7 @@ pub fn main_4_11() {
             screenShader.useProgram();
             gl::BindVertexArray(quadVAO);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, screenTexture);	// use the now resolved color attachment as the quad's texture
+            gl::BindTexture(gl::TEXTURE_2D, screenTexture); // use the now resolved color attachment as the quad's texture
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }
 

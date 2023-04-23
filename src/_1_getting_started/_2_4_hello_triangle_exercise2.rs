@@ -1,16 +1,16 @@
 #![allow(non_upper_case_globals)]
 extern crate glfw;
-use self::glfw::{Context, Key, Action};
+use self::glfw::{Action, Context, Key};
 
 extern crate gl;
 use self::gl::types::*;
 
-use std::sync::mpsc::Receiver;
 use std::ffi::CString;
-use std::ptr;
-use std::str;
 use std::mem;
 use std::os::raw::c_void;
+use std::ptr;
+use std::str;
+use std::sync::mpsc::Receiver;
 
 // settings
 const SCR_WIDTH: u32 = 800;
@@ -44,7 +44,8 @@ pub fn main_1_2_4() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -103,14 +104,14 @@ pub fn main_1_2_4() {
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         let firstTriangle: [f32; 9] = [
-            -0.9, -0.5, 0.0,  // left
-            -0.0, -0.5, 0.0,  // right
-            -0.45, 0.5, 0.0,  // top
+            -0.9, -0.5, 0.0, // left
+            -0.0, -0.5, 0.0, // right
+            -0.45, 0.5, 0.0, // top
         ];
         let secondTriangle: [f32; 9] = [
-            0.0, -0.5, 0.0,  // left
-            0.9, -0.5, 0.0,  // right
-            0.45, 0.5, 0.0   // top
+            0.0, -0.5, 0.0, // left
+            0.9, -0.5, 0.0, // right
+            0.45, 0.5, 0.0, // top
         ];
         let (mut VBOs, mut VAOs) = ([0, 0], [0, 0]);
         gl::GenVertexArrays(2, VAOs.as_mut_ptr()); // we can also generate multiple VAOs or buffers at the same time
@@ -120,10 +121,12 @@ pub fn main_1_2_4() {
         gl::BindVertexArray(VAOs[0]);
         gl::BindBuffer(gl::ARRAY_BUFFER, VBOs[0]);
         // Vertex attributes stay the same
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (firstTriangle.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &firstTriangle[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (firstTriangle.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &firstTriangle[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
 
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, 3 * mem::size_of::<GLfloat>() as GLsizei, ptr::null());
         gl::EnableVertexAttribArray(0);
@@ -132,10 +135,12 @@ pub fn main_1_2_4() {
         // ---------------------
         gl::BindVertexArray(VAOs[1]);
         gl::BindBuffer(gl::ARRAY_BUFFER, VBOs[1]);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (secondTriangle.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &secondTriangle[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (secondTriangle.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &secondTriangle[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
 
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, 0, ptr::null()); // because the vertex data is tightly packed we can also specify 0 as the vertex attribute's stride to let OpenGL figure it out
         gl::EnableVertexAttribArray(0);

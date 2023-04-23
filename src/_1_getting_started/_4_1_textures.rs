@@ -1,15 +1,15 @@
 #![allow(non_upper_case_globals)]
 extern crate glfw;
-use self::glfw::{Context, Key, Action};
+use self::glfw::{Action, Context, Key};
 
 extern crate gl;
 use self::gl::types::*;
 
-use std::sync::mpsc::Receiver;
-use std::ptr;
 use std::mem;
 use std::os::raw::c_void;
 use std::path::Path;
+use std::ptr;
+use std::sync::mpsc::Receiver;
 
 use crate::shader::Shader;
 
@@ -32,7 +32,8 @@ pub fn main_1_4_1() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -48,21 +49,22 @@ pub fn main_1_4_1() {
         // ------------------------------------
         let ourShader = Shader::new(
             "src/_1_getting_started/shaders/4.1.texture.vs",
-            "src/_1_getting_started/shaders/4.1.texture.fs");
+            "src/_1_getting_started/shaders/4.1.texture.fs",
+        );
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         // HINT: type annotation is crucial since default for float literals is f64
         let vertices: [f32; 32] = [
             // positions       // colors        // texture coords
-             0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0, // top right
-             0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0, // bottom right
-            -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0, // bottom left
-            -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0  // top left
+            0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, // top right
+            0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom right
+            -0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom left
+            -0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, // top left
         ];
         let indices = [
-            0, 1, 3,  // first Triangle
-            1, 2, 3   // second Triangle
+            0, 1, 3, // first Triangle
+            1, 2, 3, // second Triangle
         ];
         let (mut VBO, mut VAO, mut EBO) = (0, 0, 0);
         gl::GenVertexArrays(1, &mut VAO);
@@ -72,16 +74,20 @@ pub fn main_1_4_1() {
         gl::BindVertexArray(VAO);
 
         gl::BindBuffer(gl::ARRAY_BUFFER, VBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &vertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &vertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
 
         gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, EBO);
-        gl::BufferData(gl::ELEMENT_ARRAY_BUFFER,
-                       (indices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &indices[0] as *const i32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ELEMENT_ARRAY_BUFFER,
+            (indices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &indices[0] as *const i32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
 
         let stride = 8 * mem::size_of::<GLfloat>() as GLsizei;
         // position attribute
@@ -99,7 +105,7 @@ pub fn main_1_4_1() {
         let mut texture = 0;
         gl::GenTextures(1, &mut texture);
         gl::BindTexture(gl::TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
-        // set the texture wrapping parameters
+                                                  // set the texture wrapping parameters
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32); // set texture wrapping to gl::REPEAT (default wrapping method)
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
         // set texture filtering parameters
@@ -108,15 +114,17 @@ pub fn main_1_4_1() {
         // load image, create texture and generate mipmaps
         let img = image::open(Path::new("resources/textures/container.jpg")).expect("Failed to load texture");
         let data = img.raw_pixels();
-        gl::TexImage2D(gl::TEXTURE_2D,
-                       0,
-                       gl::RGB as i32,
-                       img.width() as i32,
-                       img.height() as i32,
-                       0,
-                       gl::RGB,
-                       gl::UNSIGNED_BYTE,
-                       &data[0] as *const u8 as *const c_void);
+        gl::TexImage2D(
+            gl::TEXTURE_2D,
+            0,
+            gl::RGB as i32,
+            img.width() as i32,
+            img.height() as i32,
+            0,
+            gl::RGB,
+            gl::UNSIGNED_BYTE,
+            &data[0] as *const u8 as *const c_void,
+        );
         gl::GenerateMipmap(gl::TEXTURE_2D);
 
         (ourShader, VBO, VAO, EBO, texture)

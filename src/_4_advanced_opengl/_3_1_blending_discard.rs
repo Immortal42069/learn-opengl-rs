@@ -7,22 +7,21 @@ use self::glfw::Context;
 extern crate gl;
 use self::gl::types::*;
 
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
 use std::path::Path;
-use std::ffi::CStr;
+use std::ptr;
 
-use crate::common::{process_events, processInput};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{processInput, process_events};
+use crate::shader::Shader;
 
-use cgmath::{Matrix4, vec3,  Deg, perspective, Point3};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec3, Deg, Matrix4, Point3};
 
-
-use image::GenericImage;
 use image::DynamicImage::*;
+use image::GenericImage;
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -52,7 +51,8 @@ pub fn main_4_3_1() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -67,7 +67,19 @@ pub fn main_4_3_1() {
     // ---------------------------------------
     gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
-    let (shader, cubeVBO, cubeVAO, planeVBO, planeVAO, transparentVBO, transparentVAO, cubeTexture, floorTexture, transparentTexture, vegetation) = unsafe {
+    let (
+        shader,
+        cubeVBO,
+        cubeVAO,
+        planeVBO,
+        planeVAO,
+        transparentVBO,
+        transparentVAO,
+        cubeTexture,
+        floorTexture,
+        transparentTexture,
+        vegetation,
+    ) = unsafe {
         // configure global opengl state
         // -----------------------------
         gl::Enable(gl::DEPTH_TEST);
@@ -76,73 +88,32 @@ pub fn main_4_3_1() {
         // ------------------------------------
         let shader = Shader::new(
             "src/_4_advanced_opengl/shaders/3.1.blending.vs",
-            "src/_4_advanced_opengl/shaders/3.1.blending.fs");
+            "src/_4_advanced_opengl/shaders/3.1.blending.fs",
+        );
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         let cubeVertices: [f32; 180] = [
-             // positions       // texture Coords
-             -0.5, -0.5, -0.5,  0.0, 0.0,
-              0.5, -0.5, -0.5,  1.0, 0.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-             -0.5,  0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 0.0,
-
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 1.0,
-              0.5,  0.5,  0.5,  1.0, 1.0,
-             -0.5,  0.5,  0.5,  0.0, 1.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-
-             -0.5,  0.5,  0.5,  1.0, 0.0,
-             -0.5,  0.5, -0.5,  1.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-             -0.5,  0.5,  0.5,  1.0, 0.0,
-
-              0.5,  0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5,  0.5,  0.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5, -0.5,  1.0, 1.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-
-             -0.5,  0.5, -0.5,  0.0, 1.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-             -0.5,  0.5,  0.5,  0.0, 0.0,
-             -0.5,  0.5, -0.5,  0.0, 1.0
+            // positions       // texture Coords
+            -0.5, -0.5, -0.5, 0.0, 0.0, 0.5, -0.5, -0.5, 1.0, 0.0, 0.5, 0.5, -0.5, 1.0, 1.0, 0.5, 0.5, -0.5, 1.0, 1.0,
+            -0.5, 0.5, -0.5, 0.0, 1.0, -0.5, -0.5, -0.5, 0.0, 0.0, -0.5, -0.5, 0.5, 0.0, 0.0, 0.5, -0.5, 0.5, 1.0, 0.0,
+            0.5, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, 0.5, 1.0, 1.0, -0.5, 0.5, 0.5, 0.0, 1.0, -0.5, -0.5, 0.5, 0.0, 0.0,
+            -0.5, 0.5, 0.5, 1.0, 0.0, -0.5, 0.5, -0.5, 1.0, 1.0, -0.5, -0.5, -0.5, 0.0, 1.0, -0.5, -0.5, -0.5, 0.0,
+            1.0, -0.5, -0.5, 0.5, 0.0, 0.0, -0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, -0.5, 1.0,
+            1.0, 0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0,
+            0.0, -0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, -0.5, 1.0, 1.0, 0.5, -0.5, 0.5, 1.0, 0.0, 0.5, -0.5, 0.5, 1.0,
+            0.0, -0.5, -0.5, 0.5, 0.0, 0.0, -0.5, -0.5, -0.5, 0.0, 1.0, -0.5, 0.5, -0.5, 0.0, 1.0, 0.5, 0.5, -0.5, 1.0,
+            1.0, 0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, 0.5, 1.0, 0.0, -0.5, 0.5, 0.5, 0.0, 0.0, -0.5, 0.5, -0.5, 0.0, 1.0,
         ];
         let planeVertices: [f32; 30] = [
             // positions       // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-             5.0, -0.5,  5.0,  2.0, 0.0,
-            -5.0, -0.5,  5.0,  0.0, 0.0,
-            -5.0, -0.5, -5.0,  0.0, 2.0,
-
-             5.0, -0.5,  5.0,  2.0, 0.0,
-            -5.0, -0.5, -5.0,  0.0, 2.0,
-             5.0, -0.5, -5.0,  2.0, 2.0
+            5.0, -0.5, 5.0, 2.0, 0.0, -5.0, -0.5, 5.0, 0.0, 0.0, -5.0, -0.5, -5.0, 0.0, 2.0, 5.0, -0.5, 5.0, 2.0, 0.0,
+            -5.0, -0.5, -5.0, 0.0, 2.0, 5.0, -0.5, -5.0, 2.0, 2.0,
         ];
         let transparentVertices: [f32; 30] = [
             // positions      // texture Coords (swapped y coordinates because texture is flipped upside down)
-            0.0,  0.5,  0.0,  0.0,  0.0,
-            0.0, -0.5,  0.0,  0.0,  1.0,
-            1.0, -0.5,  0.0,  1.0,  1.0,
-
-            0.0,  0.5,  0.0,  0.0,  0.0,
-            1.0, -0.5,  0.0,  1.0,  1.0,
-            1.0,  0.5,  0.0,  1.0,  0.0
+            0.0, 0.5, 0.0, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 1.0, 1.0, -0.5, 0.0, 1.0, 1.0, 0.0, 0.5, 0.0, 0.0, 0.0, 1.0,
+            -0.5, 0.0, 1.0, 1.0, 1.0, 0.5, 0.0, 1.0, 0.0,
         ];
         // cube VAO
         let (mut cubeVAO, mut cubeVBO) = (0, 0);
@@ -150,10 +121,12 @@ pub fn main_4_3_1() {
         gl::GenBuffers(1, &mut cubeVBO);
         gl::BindVertexArray(cubeVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, cubeVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &cubeVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &cubeVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         let stride = 5 * mem::size_of::<GLfloat>() as GLsizei;
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
@@ -166,10 +139,12 @@ pub fn main_4_3_1() {
         gl::GenBuffers(1, &mut planeVBO);
         gl::BindVertexArray(planeVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, planeVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (planeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &planeVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (planeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &planeVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
         gl::EnableVertexAttribArray(1);
@@ -180,10 +155,12 @@ pub fn main_4_3_1() {
         gl::GenBuffers(1, &mut transparentVBO);
         gl::BindVertexArray(transparentVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, transparentVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (transparentVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &transparentVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (transparentVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &transparentVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
         gl::EnableVertexAttribArray(1);
@@ -200,10 +177,10 @@ pub fn main_4_3_1() {
         // --------------------------------
         let vegetation = [
             vec3(-1.5, 0.0, -0.48),
-            vec3( 1.5, 0.0, 0.51),
-            vec3( 0.0, 0.0, 0.7),
+            vec3(1.5, 0.0, 0.51),
+            vec3(0.0, 0.0, 0.7),
             vec3(-0.3, 0.0, -2.3),
-            vec3 (0.5, 0.0, -0.6)
+            vec3(0.5, 0.0, -0.6),
         ];
 
         // shader configuration
@@ -211,7 +188,19 @@ pub fn main_4_3_1() {
         shader.useProgram();
         shader.setInt(c_str!("texture1"), 0);
 
-        (shader, cubeVBO, cubeVAO, planeVBO, planeVAO, transparentVBO, transparentVAO, cubeTexture, floorTexture, transparentTexture, vegetation)
+        (
+            shader,
+            cubeVBO,
+            cubeVAO,
+            planeVBO,
+            planeVAO,
+            transparentVBO,
+            transparentVAO,
+            cubeTexture,
+            floorTexture,
+            transparentTexture,
+            vegetation,
+        )
     };
 
     // render loop
@@ -239,7 +228,8 @@ pub fn main_4_3_1() {
 
             // draw objects
             shader.useProgram();
-            let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32 , 0.1, 100.0);
+            let projection: Matrix4<f32> =
+                perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
             let view = camera.GetViewMatrix();
             let mut model: Matrix4<f32>;
             shader.setMat4(c_str!("projection"), &projection);
@@ -306,12 +296,37 @@ pub unsafe fn loadTexture(path: &str) -> u32 {
     let data = img.raw_pixels();
 
     gl::BindTexture(gl::TEXTURE_2D, textureID);
-    gl::TexImage2D(gl::TEXTURE_2D, 0, format as i32, img.width() as i32, img.height() as i32,
-        0, format, gl::UNSIGNED_BYTE, &data[0] as *const u8 as *const c_void);
+    gl::TexImage2D(
+        gl::TEXTURE_2D,
+        0,
+        format as i32,
+        img.width() as i32,
+        img.height() as i32,
+        0,
+        format,
+        gl::UNSIGNED_BYTE,
+        &data[0] as *const u8 as *const c_void,
+    );
     gl::GenerateMipmap(gl::TEXTURE_2D);
 
-    gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, if format == gl::RGBA { gl::CLAMP_TO_EDGE} else { gl::REPEAT } as i32); // for this tutorial: use gl::CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat );
-    gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, if format == gl::RGBA { gl::CLAMP_TO_EDGE} else { gl::REPEAT } as i32);
+    gl::TexParameteri(
+        gl::TEXTURE_2D,
+        gl::TEXTURE_WRAP_S,
+        if format == gl::RGBA {
+            gl::CLAMP_TO_EDGE
+        } else {
+            gl::REPEAT
+        } as i32,
+    ); // for this tutorial: use gl::CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat );
+    gl::TexParameteri(
+        gl::TEXTURE_2D,
+        gl::TEXTURE_WRAP_T,
+        if format == gl::RGBA {
+            gl::CLAMP_TO_EDGE
+        } else {
+            gl::REPEAT
+        } as i32,
+    );
     gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as i32);
     gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
 

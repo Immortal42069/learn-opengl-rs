@@ -8,12 +8,12 @@ use self::glfw::Context;
 
 extern crate gl;
 
-use cgmath::{Matrix4, Deg, vec3, Point3, perspective};
+use cgmath::{perspective, vec3, Deg, Matrix4, Point3};
 
-use crate::common::{process_events, processInput};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{processInput, process_events};
 use crate::model::Model;
+use crate::shader::Shader;
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -43,7 +43,8 @@ pub fn main_4_9_3() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -72,7 +73,7 @@ pub fn main_4_9_3() {
         let normalShader = Shader::with_geometry_shader(
             "src/_4_advanced_opengl/shaders/9.3.normal_visualization.vs",
             "src/_4_advanced_opengl/shaders/9.3.normal_visualization.fs",
-            "src/_4_advanced_opengl/shaders/9.3.normal_visualization.gs"
+            "src/_4_advanced_opengl/shaders/9.3.normal_visualization.gs",
         );
 
         // load models
@@ -109,7 +110,7 @@ pub fn main_4_9_3() {
             let projection: Matrix4<f32> = perspective(Deg(45.0), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
             let view = camera.GetViewMatrix();
             let mut model = Matrix4::<f32>::from_translation(vec3(0.0, -1.75, 0.0)); // translate it down so it's at the center of the scene
-            model = model * Matrix4::from_scale(0.2);  // it's a bit too big for our scene, so scale it down
+            model = model * Matrix4::from_scale(0.2); // it's a bit too big for our scene, so scale it down
             shader.useProgram();
             shader.setMat4(c_str!("projection"), &projection);
             shader.setMat4(c_str!("view"), &view);

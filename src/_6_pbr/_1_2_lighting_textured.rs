@@ -8,18 +8,18 @@ extern crate gl;
 
 extern crate num;
 
-use std::ptr;
+use std::f32::consts::PI;
+use std::ffi::{CStr, CString};
 use std::mem::size_of;
 use std::os::raw::c_void;
-use std::ffi::{CStr, CString};
-use std::f32::consts::PI;
+use std::ptr;
 
-use crate::common::{process_events, processInput, loadTexture};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{loadTexture, processInput, process_events};
+use crate::shader::Shader;
 
-use cgmath::{Matrix4, vec3, Vector3, vec2, Deg, perspective, Point3};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec2, vec3, Deg, Matrix4, Point3, Vector3};
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -50,7 +50,8 @@ pub fn main_6_1_2() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -72,9 +73,7 @@ pub fn main_6_1_2() {
 
         // build and compile shaders
         // ------------------------------------
-        let shader = Shader::new(
-            "src/_6_pbr/shaders/1.2.pbr.vs",
-            "src/_6_pbr/shaders/1.2.pbr.fs");
+        let shader = Shader::new("src/_6_pbr/shaders/1.2.pbr.vs", "src/_6_pbr/shaders/1.2.pbr.fs");
 
         shader.useProgram();
         shader.setInt(c_str!("albedoMap"), 0);
@@ -85,17 +84,15 @@ pub fn main_6_1_2() {
 
         // load PBR material textures
         // --------------------------
-        let albedo    = loadTexture("resources/textures/pbr/rusted_iron/albedo.png");
-        let normal    = loadTexture("resources/textures/pbr/rusted_iron/normal.png");
-        let metallic  = loadTexture("resources/textures/pbr/rusted_iron/metallic.png");
+        let albedo = loadTexture("resources/textures/pbr/rusted_iron/albedo.png");
+        let normal = loadTexture("resources/textures/pbr/rusted_iron/normal.png");
+        let metallic = loadTexture("resources/textures/pbr/rusted_iron/metallic.png");
         let roughness = loadTexture("resources/textures/pbr/rusted_iron/roughness.png");
-        let ao        = loadTexture("resources/textures/pbr/rusted_iron/ao.png");
-
-
+        let ao = loadTexture("resources/textures/pbr/rusted_iron/ao.png");
 
         // initialize static shader uniforms before rendering
         // --------------------------------------------------
-        let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32 , 0.1, 100.0);
+        let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
         shader.setMat4(c_str!("projection"), &projection);
 
         (shader, albedo, normal, metallic, roughness, ao)
@@ -103,13 +100,9 @@ pub fn main_6_1_2() {
 
     // lights
     // ------
-    let lightPositions: [Vector3<f32>; 1] = [
-        vec3(0.0,  10.0, 10.0),
-    ];
-    let lightColors: [Vector3<f32>; 1] = [
-        vec3(150.0, 150.0, 150.0),
-    ];
-    let nrRows    = 7;
+    let lightPositions: [Vector3<f32>; 1] = [vec3(0.0, 10.0, 10.0)];
+    let lightColors: [Vector3<f32>; 1] = [vec3(150.0, 150.0, 150.0)];
+    let nrRows = 7;
     let nrColumns = 7;
     let spacing = 2.5;
 
@@ -167,7 +160,7 @@ pub fn main_6_1_2() {
                     let model = Matrix4::from_translation(vec3(
                         (col - (nrColumns / 2)) as f32 * spacing,
                         (row - (nrRows / 2)) as f32 * spacing,
-                        0.0
+                        0.0,
                     ));
                     shader.setMat4(c_str!("model"), &model);
                     renderSphere(&mut sphereVAO, &mut indexCount);
@@ -198,7 +191,6 @@ pub fn main_6_1_2() {
         window.swap_buffers();
         glfw.poll_events();
     }
-
 }
 
 pub unsafe fn renderSphere(sphereVAO: &mut u32, indexCount: &mut u32) {
@@ -217,8 +209,8 @@ pub unsafe fn renderSphere(sphereVAO: &mut u32, indexCount: &mut u32) {
 
         const X_SEGMENTS: u32 = 64;
         const Y_SEGMENTS: u32 = 64;
-        for y in 0..Y_SEGMENTS+1 {
-            for x in 0..X_SEGMENTS+1 {
+        for y in 0..Y_SEGMENTS + 1 {
+            for x in 0..X_SEGMENTS + 1 {
                 let xSegment = x as f32 / X_SEGMENTS as f32;
                 let ySegment = y as f32 / Y_SEGMENTS as f32;
                 let xPos = (xSegment * 2.0 * PI).cos() * (ySegment * PI).sin();
@@ -233,16 +225,16 @@ pub unsafe fn renderSphere(sphereVAO: &mut u32, indexCount: &mut u32) {
 
         let mut oddRow = false;
         for y in 0..Y_SEGMENTS {
-            if oddRow { // even rows: y == 0, y == 2; and so on
-                for x in 0..X_SEGMENTS+1 {
-                    indices.push(y       * (X_SEGMENTS + 1) + x);
+            if oddRow {
+                // even rows: y == 0, y == 2; and so on
+                for x in 0..X_SEGMENTS + 1 {
+                    indices.push(y * (X_SEGMENTS + 1) + x);
                     indices.push((y + 1) * (X_SEGMENTS + 1) + x);
                 }
-            }
-            else {
-                for x in (0..X_SEGMENTS+1).rev() {
+            } else {
+                for x in (0..X_SEGMENTS + 1).rev() {
                     indices.push((y + 1) * (X_SEGMENTS + 1) + x);
-                    indices.push(y       * (X_SEGMENTS + 1) + x);
+                    indices.push(y * (X_SEGMENTS + 1) + x);
                 }
             }
             oddRow = !oddRow;
@@ -270,10 +262,15 @@ pub unsafe fn renderSphere(sphereVAO: &mut u32, indexCount: &mut u32) {
             gl::ARRAY_BUFFER,
             (data.len() * size_of::<f32>()) as isize,
             &data[0] as *const f32 as *const c_void,
-            gl::STATIC_DRAW
+            gl::STATIC_DRAW,
         );
         gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
-        gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, (indices.len() * size_of::<u32>()) as isize, &indices[0] as *const u32 as *const c_void, gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ELEMENT_ARRAY_BUFFER,
+            (indices.len() * size_of::<u32>()) as isize,
+            &indices[0] as *const u32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         let stride = (3 + 2 + 3) * size_of::<f32>() as i32;
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());

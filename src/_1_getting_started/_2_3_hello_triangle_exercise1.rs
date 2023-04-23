@@ -1,16 +1,16 @@
 #![allow(non_upper_case_globals)]
 extern crate glfw;
-use self::glfw::{Context, Key, Action};
+use self::glfw::{Action, Context, Key};
 
 extern crate gl;
 use self::gl::types::*;
 
-use std::sync::mpsc::Receiver;
 use std::ffi::CString;
-use std::ptr;
-use std::str;
 use std::mem;
 use std::os::raw::c_void;
+use std::ptr;
+use std::str;
+use std::sync::mpsc::Receiver;
 
 // settings
 const SCR_WIDTH: u32 = 800;
@@ -44,7 +44,8 @@ pub fn main_1_2_3() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -105,13 +106,13 @@ pub fn main_1_2_3() {
         // add a new set of vertices to form a second triangle (a total of 6 vertices); the vertex attribute configuration remains the same (still one 3-float position vector per vertex)
         let vertices: [f32; 18] = [
             // first triangle
-            -0.9, -0.5, 0.0,  // left
-            -0.0, -0.5, 0.0,  // right
-            -0.45, 0.5, 0.0,  // top
+            -0.9, -0.5, 0.0, // left
+            -0.0, -0.5, 0.0, // right
+            -0.45, 0.5, 0.0, // top
             // second triangle
-            0.0, -0.5, 0.0,  // left
-            0.9, -0.5, 0.0,  // right
-            0.45, 0.5, 0.0   // top
+            0.0, -0.5, 0.0, // left
+            0.9, -0.5, 0.0, // right
+            0.45, 0.5, 0.0, // top
         ];
         let (mut VBO, mut VAO) = (0, 0);
         gl::GenVertexArrays(1, &mut VAO);
@@ -120,10 +121,12 @@ pub fn main_1_2_3() {
         gl::BindVertexArray(VAO);
 
         gl::BindBuffer(gl::ARRAY_BUFFER, VBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &vertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &vertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
 
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, 3 * mem::size_of::<GLfloat>() as GLsizei, ptr::null());
         gl::EnableVertexAttribArray(0);
@@ -158,7 +161,7 @@ pub fn main_1_2_3() {
             gl::UseProgram(shaderProgram);
             gl::BindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
             gl::DrawArrays(gl::TRIANGLES, 0, 6); // set the count to 6 since we're drawing 6 vertices now (2 triangles); not 3!
-            // glBindVertexArray(0); // no need to unbind it every time
+                                                 // glBindVertexArray(0); // no need to unbind it every time
         }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

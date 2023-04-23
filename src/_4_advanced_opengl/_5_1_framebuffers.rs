@@ -7,17 +7,17 @@ use self::glfw::Context;
 extern crate gl;
 use self::gl::types::*;
 
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
-use std::ffi::CStr;
+use std::ptr;
 
-use crate::common::{process_events, processInput, loadTexture};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{loadTexture, processInput, process_events};
+use crate::shader::Shader;
 
-use cgmath::{Matrix4, vec3,  Deg, perspective, Point3};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec3, Deg, Matrix4, Point3};
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -47,7 +47,8 @@ pub fn main_4_5_1() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     // query framebuffer size as it might be quite different from the requested size on Retina displays
@@ -65,7 +66,20 @@ pub fn main_4_5_1() {
     // ---------------------------------------
     gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
-    let (shader, screenShader, cubeVBO, cubeVAO, planeVBO, planeVAO, quadVBO, quadVAO, cubeTexture, floorTexture, framebuffer, textureColorbuffer) = unsafe {
+    let (
+        shader,
+        screenShader,
+        cubeVBO,
+        cubeVAO,
+        planeVBO,
+        planeVAO,
+        quadVBO,
+        quadVAO,
+        cubeTexture,
+        floorTexture,
+        framebuffer,
+        textureColorbuffer,
+    ) = unsafe {
         // configure global opengl state
         // -----------------------------
         gl::Enable(gl::DEPTH_TEST);
@@ -74,76 +88,37 @@ pub fn main_4_5_1() {
         // ------------------------------------
         let shader = Shader::new(
             "src/_4_advanced_opengl/shaders/5.1.framebuffers.vs",
-            "src/_4_advanced_opengl/shaders/5.1.framebuffers.fs");
+            "src/_4_advanced_opengl/shaders/5.1.framebuffers.fs",
+        );
         let screenShader = Shader::new(
             "src/_4_advanced_opengl/shaders/5.1.framebuffers_screen.vs",
-            "src/_4_advanced_opengl/shaders/5.1.framebuffers_screen.fs");
+            "src/_4_advanced_opengl/shaders/5.1.framebuffers_screen.fs",
+        );
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         let cubeVertices: [f32; 180] = [
-             // positions       // texture Coords
-             -0.5, -0.5, -0.5,  0.0, 0.0,
-              0.5, -0.5, -0.5,  1.0, 0.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-             -0.5,  0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 0.0,
-
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 1.0,
-              0.5,  0.5,  0.5,  1.0, 1.0,
-             -0.5,  0.5,  0.5,  0.0, 1.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-
-             -0.5,  0.5,  0.5,  1.0, 0.0,
-             -0.5,  0.5, -0.5,  1.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-             -0.5,  0.5,  0.5,  1.0, 0.0,
-
-              0.5,  0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5,  0.5,  0.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5, -0.5,  1.0, 1.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-
-             -0.5,  0.5, -0.5,  0.0, 1.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-             -0.5,  0.5,  0.5,  0.0, 0.0,
-             -0.5,  0.5, -0.5,  0.0, 1.0
+            // positions       // texture Coords
+            -0.5, -0.5, -0.5, 0.0, 0.0, 0.5, -0.5, -0.5, 1.0, 0.0, 0.5, 0.5, -0.5, 1.0, 1.0, 0.5, 0.5, -0.5, 1.0, 1.0,
+            -0.5, 0.5, -0.5, 0.0, 1.0, -0.5, -0.5, -0.5, 0.0, 0.0, -0.5, -0.5, 0.5, 0.0, 0.0, 0.5, -0.5, 0.5, 1.0, 0.0,
+            0.5, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, 0.5, 1.0, 1.0, -0.5, 0.5, 0.5, 0.0, 1.0, -0.5, -0.5, 0.5, 0.0, 0.0,
+            -0.5, 0.5, 0.5, 1.0, 0.0, -0.5, 0.5, -0.5, 1.0, 1.0, -0.5, -0.5, -0.5, 0.0, 1.0, -0.5, -0.5, -0.5, 0.0,
+            1.0, -0.5, -0.5, 0.5, 0.0, 0.0, -0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, -0.5, 1.0,
+            1.0, 0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0,
+            0.0, -0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, -0.5, 1.0, 1.0, 0.5, -0.5, 0.5, 1.0, 0.0, 0.5, -0.5, 0.5, 1.0,
+            0.0, -0.5, -0.5, 0.5, 0.0, 0.0, -0.5, -0.5, -0.5, 0.0, 1.0, -0.5, 0.5, -0.5, 0.0, 1.0, 0.5, 0.5, -0.5, 1.0,
+            1.0, 0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, 0.5, 1.0, 0.0, -0.5, 0.5, 0.5, 0.0, 0.0, -0.5, 0.5, -0.5, 0.0, 1.0,
         ];
         let planeVertices: [f32; 30] = [
             // positions       // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-             5.0, -0.5,  5.0,  2.0, 0.0,
-            -5.0, -0.5,  5.0,  0.0, 0.0,
-            -5.0, -0.5, -5.0,  0.0, 2.0,
-
-             5.0, -0.5,  5.0,  2.0, 0.0,
-            -5.0, -0.5, -5.0,  0.0, 2.0,
-             5.0, -0.5, -5.0,  2.0, 2.0
+            5.0, -0.5, 5.0, 2.0, 0.0, -5.0, -0.5, 5.0, 0.0, 0.0, -5.0, -0.5, -5.0, 0.0, 2.0, 5.0, -0.5, 5.0, 2.0, 0.0,
+            -5.0, -0.5, -5.0, 0.0, 2.0, 5.0, -0.5, -5.0, 2.0, 2.0,
         ];
-        let quadVertices: [f32; 24] = [ // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+        let quadVertices: [f32; 24] = [
+            // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
             // positions // texCoords
-            -1.0,  1.0,  0.0, 1.0,
-            -1.0, -1.0,  0.0, 0.0,
-             1.0, -1.0,  1.0, 0.0,
-
-            -1.0,  1.0,  0.0, 1.0,
-             1.0, -1.0,  1.0, 0.0,
-             1.0,  1.0,  1.0, 1.0
+            -1.0, 1.0, 0.0, 1.0, -1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, -1.0, 1.0, 0.0,
+            1.0, 1.0, 1.0, 1.0,
         ];
         // cube VAO
         let (mut cubeVAO, mut cubeVBO) = (0, 0);
@@ -151,10 +126,12 @@ pub fn main_4_5_1() {
         gl::GenBuffers(1, &mut cubeVBO);
         gl::BindVertexArray(cubeVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, cubeVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &cubeVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &cubeVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         let stride = 5 * mem::size_of::<GLfloat>() as GLsizei;
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
@@ -167,10 +144,12 @@ pub fn main_4_5_1() {
         gl::GenBuffers(1, &mut planeVBO);
         gl::BindVertexArray(planeVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, planeVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (planeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &planeVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (planeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &planeVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
         gl::EnableVertexAttribArray(1);
@@ -181,10 +160,12 @@ pub fn main_4_5_1() {
         gl::GenBuffers(1, &mut quadVBO);
         gl::BindVertexArray(quadVBO);
         gl::BindBuffer(gl::ARRAY_BUFFER, quadVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (quadVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &quadVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (quadVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &quadVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         gl::EnableVertexAttribArray(0);
         let stride = 4 * mem::size_of::<GLfloat>() as GLsizei;
         gl::VertexAttribPointer(0, 2, gl::FLOAT, gl::FALSE, stride, ptr::null());
@@ -213,7 +194,17 @@ pub fn main_4_5_1() {
         let mut textureColorbuffer = 0;
         gl::GenTextures(1, &mut textureColorbuffer);
         gl::BindTexture(gl::TEXTURE_2D, textureColorbuffer);
-        gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as i32, scr_width, scr_height, 0, gl::RGB, gl::UNSIGNED_BYTE, ptr::null());
+        gl::TexImage2D(
+            gl::TEXTURE_2D,
+            0,
+            gl::RGB as i32,
+            scr_width,
+            scr_height,
+            0,
+            gl::RGB,
+            gl::UNSIGNED_BYTE,
+            ptr::null(),
+        );
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, textureColorbuffer, 0);
@@ -223,7 +214,7 @@ pub fn main_4_5_1() {
         gl::BindRenderbuffer(gl::RENDERBUFFER, rbo);
         gl::RenderbufferStorage(gl::RENDERBUFFER, gl::DEPTH24_STENCIL8, scr_width, scr_height); // use a single renderbuffer object for both a depth AND stencil buffer.
         gl::FramebufferRenderbuffer(gl::FRAMEBUFFER, gl::DEPTH_STENCIL_ATTACHMENT, gl::RENDERBUFFER, rbo); // now actually attach it
-        // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+                                                                                                           // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
         if gl::CheckFramebufferStatus(gl::FRAMEBUFFER) != gl::FRAMEBUFFER_COMPLETE {
             println!("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
         }
@@ -232,7 +223,20 @@ pub fn main_4_5_1() {
         // draw as wireframe
         // gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
 
-        (shader, screenShader, cubeVBO, cubeVAO, planeVBO, planeVAO, quadVBO, quadVAO, cubeTexture, floorTexture, framebuffer, textureColorbuffer)
+        (
+            shader,
+            screenShader,
+            cubeVBO,
+            cubeVAO,
+            planeVBO,
+            planeVAO,
+            quadVBO,
+            quadVAO,
+            cubeTexture,
+            floorTexture,
+            framebuffer,
+            textureColorbuffer,
+        )
     };
 
     // render loop
@@ -266,7 +270,8 @@ pub fn main_4_5_1() {
             shader.useProgram();
             let mut model: Matrix4<f32>;
             let view = camera.GetViewMatrix();
-            let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32 , 0.1, 100.0);
+            let projection: Matrix4<f32> =
+                perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
             shader.setMat4(c_str!("view"), &view);
             shader.setMat4(c_str!("projection"), &projection);
             // cubes
@@ -289,15 +294,14 @@ pub fn main_4_5_1() {
             // now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
             gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
             gl::Disable(gl::DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
-            // clear all relevant buffers
+                                         // clear all relevant buffers
             gl::ClearColor(1.0, 1.0, 1.0, 1.0); // set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
             gl::Clear(gl::COLOR_BUFFER_BIT);
 
             screenShader.useProgram();
             gl::BindVertexArray(quadVAO);
-            gl::BindTexture(gl::TEXTURE_2D, textureColorbuffer);	// use the color attachment texture as the texture of the quad plane
+            gl::BindTexture(gl::TEXTURE_2D, textureColorbuffer); // use the color attachment texture as the texture of the quad plane
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
-
         }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

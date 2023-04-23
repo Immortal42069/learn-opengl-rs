@@ -1,19 +1,18 @@
 #![allow(non_upper_case_globals)]
 extern crate glfw;
-use self::glfw::{Context, Key, Action};
+use self::glfw::{Action, Context, Key};
 
 extern crate gl;
 use self::gl::types::*;
 
-use std::sync::mpsc::Receiver;
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
 use std::path::Path;
-use std::ffi::CStr;
+use std::ptr;
+use std::sync::mpsc::Receiver;
 
 use crate::shader::Shader;
-
 
 use image::GenericImage;
 
@@ -33,7 +32,8 @@ pub fn main_1_4_2() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -49,21 +49,22 @@ pub fn main_1_4_2() {
         // ------------------------------------
         let ourShader = Shader::new(
             "src/_1_getting_started/shaders/4.2.texture.vs",
-            "src/_1_getting_started/shaders/4.2.texture.fs");
+            "src/_1_getting_started/shaders/4.2.texture.fs",
+        );
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         // HINT: type annotation is crucial since default for float literals is f64
         let vertices: [f32; 32] = [
             // positions       // colors        // texture coords
-             0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0, // top right
-             0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0, // bottom right
-            -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0, // bottom left
-            -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0  // top left
+            0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, // top right
+            0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom right
+            -0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom left
+            -0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, // top left
         ];
         let indices = [
-            0, 1, 3,  // first Triangle
-            1, 2, 3   // second Triangle
+            0, 1, 3, // first Triangle
+            1, 2, 3, // second Triangle
         ];
         let (mut VBO, mut VAO, mut EBO) = (0, 0, 0);
         gl::GenVertexArrays(1, &mut VAO);
@@ -73,16 +74,20 @@ pub fn main_1_4_2() {
         gl::BindVertexArray(VAO);
 
         gl::BindBuffer(gl::ARRAY_BUFFER, VBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &vertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &vertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
 
         gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, EBO);
-        gl::BufferData(gl::ELEMENT_ARRAY_BUFFER,
-                       (indices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &indices[0] as *const i32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ELEMENT_ARRAY_BUFFER,
+            (indices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &indices[0] as *const i32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
 
         let stride = 8 * mem::size_of::<GLfloat>() as GLsizei;
         // position attribute
@@ -111,15 +116,17 @@ pub fn main_1_4_2() {
         // load image, create texture and generate mipmaps
         let img = image::open(Path::new("resources/textures/container.jpg")).expect("Failed to load texture");
         let data = img.raw_pixels();
-        gl::TexImage2D(gl::TEXTURE_2D,
-                       0,
-                       gl::RGB as i32,
-                       img.width() as i32,
-                       img.height() as i32,
-                       0,
-                       gl::RGB,
-                       gl::UNSIGNED_BYTE,
-                       &data[0] as *const u8 as *const c_void);
+        gl::TexImage2D(
+            gl::TEXTURE_2D,
+            0,
+            gl::RGB as i32,
+            img.width() as i32,
+            img.height() as i32,
+            0,
+            gl::RGB,
+            gl::UNSIGNED_BYTE,
+            &data[0] as *const u8 as *const c_void,
+        );
         gl::GenerateMipmap(gl::TEXTURE_2D);
         // texture 2
         // ---------
@@ -136,23 +143,25 @@ pub fn main_1_4_2() {
         let img = img.flipv(); // flip loaded texture on the y-axis.
         let data = img.raw_pixels();
         // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
-        gl::TexImage2D(gl::TEXTURE_2D,
-                       0,
-                       gl::RGB as i32,
-                       img.width() as i32,
-                       img.height() as i32,
-                       0,
-                       gl::RGBA,
-                       gl::UNSIGNED_BYTE,
-                       &data[0] as *const u8 as *const c_void);
+        gl::TexImage2D(
+            gl::TEXTURE_2D,
+            0,
+            gl::RGB as i32,
+            img.width() as i32,
+            img.height() as i32,
+            0,
+            gl::RGBA,
+            gl::UNSIGNED_BYTE,
+            &data[0] as *const u8 as *const c_void,
+        );
         gl::GenerateMipmap(gl::TEXTURE_2D);
 
         // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
         // -------------------------------------------------------------------------------------------
         ourShader.useProgram(); // don't forget to activate/use the shader before setting uniforms!
-        // either set it manually like so:
+                                // either set it manually like so:
         gl::Uniform1i(gl::GetUniformLocation(ourShader.ID, c_str!("texture1").as_ptr()), 0); // using c_str! macro to avoid runtime overhead
-        // or set it via the texture class
+                                                                                             // or set it via the texture class
         ourShader.setInt(c_str!("texture2"), 1);
 
         (ourShader, VBO, VAO, EBO, texture1, texture2)

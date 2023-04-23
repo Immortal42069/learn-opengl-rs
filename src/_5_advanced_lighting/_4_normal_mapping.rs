@@ -7,17 +7,17 @@ use self::glfw::Context;
 extern crate gl;
 use self::gl::types::*;
 
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
-use std::ffi::CStr;
+use std::ptr;
 
-use crate::common::{process_events, processInput, loadTexture};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{loadTexture, processInput, process_events};
+use crate::shader::Shader;
 
-use cgmath::{Matrix4, vec3, Vector3, vec2, Vector2, Deg, perspective, Point3};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec2, vec3, Deg, Matrix4, Point3, Vector2, Vector3};
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -47,7 +47,8 @@ pub fn main_5_4() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -71,7 +72,8 @@ pub fn main_5_4() {
         // ------------------------------------
         let shader = Shader::new(
             "src/_5_advanced_lighting/shaders/4.normal_mapping.vs",
-            "src/_5_advanced_lighting/shaders/4.normal_mapping.fs");
+            "src/_5_advanced_lighting/shaders/4.normal_mapping.fs",
+        );
 
         // load textures
         // -------------
@@ -117,14 +119,16 @@ pub fn main_5_4() {
             gl::ClearColor(0.1, 0.1, 0.1, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-             // configure view/projection matrices
-            let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32 , 0.1, 100.0);
+            // configure view/projection matrices
+            let projection: Matrix4<f32> =
+                perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
             let view = camera.GetViewMatrix();
             shader.useProgram();
             shader.setMat4(c_str!("projection"), &projection);
             shader.setMat4(c_str!("view"), &view);
             // render normal-mapped quad
-            let mut model: Matrix4<f32> = Matrix4::from_axis_angle(vec3(1.0, 0.0, 1.0).normalize(), Deg(glfw.get_time() as f32 * -10.0));// rotate the quad to show normal mapping from multiple directions
+            let mut model: Matrix4<f32> =
+                Matrix4::from_axis_angle(vec3(1.0, 0.0, 1.0).normalize(), Deg(glfw.get_time() as f32 * -10.0)); // rotate the quad to show normal mapping from multiple directions
             shader.setMat4(c_str!("model"), &model);
             shader.setVector3(c_str!("viewPos"), &camera.Position.to_vec());
             shader.setVector3(c_str!("lightPos"), &lightPos);
@@ -153,10 +157,10 @@ pub fn main_5_4() {
 unsafe fn renderQuad(quadVAO: &mut u32, quadVBO: &mut u32) {
     if *quadVAO == 0 {
         // positions
-        let pos1: Vector3<f32> = vec3(-1.0,  1.0, 0.0);
+        let pos1: Vector3<f32> = vec3(-1.0, 1.0, 0.0);
         let pos2: Vector3<f32> = vec3(-1.0, -1.0, 0.0);
-        let pos3: Vector3<f32> = vec3( 1.0, -1.0, 0.0);
-        let pos4: Vector3<f32> = vec3( 1.0,  1.0, 0.0);
+        let pos3: Vector3<f32> = vec3(1.0, -1.0, 0.0);
+        let pos4: Vector3<f32> = vec3(1.0, 1.0, 0.0);
         // texture coordinates
         let uv1: Vector2<f32> = vec2(0.0, 1.0);
         let uv2: Vector2<f32> = vec2(0.0, 0.0);
@@ -210,13 +214,90 @@ unsafe fn renderQuad(quadVAO: &mut u32, quadVBO: &mut u32) {
 
         let quadVertices: [f32; 84] = [
             // positions            // normal         // texcoords  // tangent                          // bitangent
-            pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-            pos2.x, pos2.y, pos2.z, nm.x, nm.y, nm.z, uv2.x, uv2.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-            pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-
-            pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
-            pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
-            pos4.x, pos4.y, pos4.z, nm.x, nm.y, nm.z, uv4.x, uv4.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z
+            pos1.x,
+            pos1.y,
+            pos1.z,
+            nm.x,
+            nm.y,
+            nm.z,
+            uv1.x,
+            uv1.y,
+            tangent1.x,
+            tangent1.y,
+            tangent1.z,
+            bitangent1.x,
+            bitangent1.y,
+            bitangent1.z,
+            pos2.x,
+            pos2.y,
+            pos2.z,
+            nm.x,
+            nm.y,
+            nm.z,
+            uv2.x,
+            uv2.y,
+            tangent1.x,
+            tangent1.y,
+            tangent1.z,
+            bitangent1.x,
+            bitangent1.y,
+            bitangent1.z,
+            pos3.x,
+            pos3.y,
+            pos3.z,
+            nm.x,
+            nm.y,
+            nm.z,
+            uv3.x,
+            uv3.y,
+            tangent1.x,
+            tangent1.y,
+            tangent1.z,
+            bitangent1.x,
+            bitangent1.y,
+            bitangent1.z,
+            pos1.x,
+            pos1.y,
+            pos1.z,
+            nm.x,
+            nm.y,
+            nm.z,
+            uv1.x,
+            uv1.y,
+            tangent2.x,
+            tangent2.y,
+            tangent2.z,
+            bitangent2.x,
+            bitangent2.y,
+            bitangent2.z,
+            pos3.x,
+            pos3.y,
+            pos3.z,
+            nm.x,
+            nm.y,
+            nm.z,
+            uv3.x,
+            uv3.y,
+            tangent2.x,
+            tangent2.y,
+            tangent2.z,
+            bitangent2.x,
+            bitangent2.y,
+            bitangent2.z,
+            pos4.x,
+            pos4.y,
+            pos4.z,
+            nm.x,
+            nm.y,
+            nm.z,
+            uv4.x,
+            uv4.y,
+            tangent2.x,
+            tangent2.y,
+            tangent2.z,
+            bitangent2.x,
+            bitangent2.y,
+            bitangent2.z,
         ];
 
         // configure plane VAO
@@ -228,7 +309,8 @@ unsafe fn renderQuad(quadVAO: &mut u32, quadVBO: &mut u32) {
             gl::ARRAY_BUFFER,
             (quadVertices.len() * mem::size_of::<f32>()) as isize,
             &quadVertices[0] as *const f32 as *const c_void,
-            gl::STATIC_DRAW);
+            gl::STATIC_DRAW,
+        );
         let stride = 14 * mem::size_of::<GLfloat>() as GLsizei;
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());

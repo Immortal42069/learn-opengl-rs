@@ -2,36 +2,31 @@
 #![allow(non_snake_case)]
 
 extern crate glfw;
-use self::glfw::{Context, Key, Action};
+use self::glfw::{Action, Context, Key};
 
 extern crate gl;
 use self::gl::types::*;
 
-use std::sync::mpsc::Receiver;
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
 use std::path::Path;
-use std::ffi::CStr;
+use std::ptr;
+use std::sync::mpsc::Receiver;
 
 use crate::shader::Shader;
 
-
 use image::GenericImage;
 
-use cgmath::{Matrix4, Vector3, vec3,  Deg, perspective, Point3};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec3, Deg, Matrix4, Point3, Vector3};
 
 // settings
 const SCR_WIDTH: u32 = 800;
 const SCR_HEIGHT: u32 = 600;
 
 // camera
-const cameraUp: Vector3<f32> = Vector3 {
-    x: 0.0,
-    y: 1.0,
-    z: 0.0,
-};
+const cameraUp: Vector3<f32> = Vector3 { x: 0.0, y: 1.0, z: 0.0 };
 
 pub fn main_1_7_3() {
     let mut cameraPos = Point3::new(0.0, 0.0, 3.0);
@@ -62,7 +57,8 @@ pub fn main_1_7_3() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -84,66 +80,35 @@ pub fn main_1_7_3() {
 
         // build and compile our shader program
         // ------------------------------------
-        let ourShader = Shader::new(
-            "src/_1_getting_started/shaders/7.3.camera.vs",
-            "src/_1_getting_started/shaders/7.3.camera.fs");
+        let ourShader =
+            Shader::new("src/_1_getting_started/shaders/7.3.camera.vs", "src/_1_getting_started/shaders/7.3.camera.fs");
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         let vertices: [f32; 180] = [
-             -0.5, -0.5, -0.5,  0.0, 0.0,
-              0.5, -0.5, -0.5,  1.0, 0.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-             -0.5,  0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 0.0,
-
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 1.0,
-              0.5,  0.5,  0.5,  1.0, 1.0,
-             -0.5,  0.5,  0.5,  0.0, 1.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-
-             -0.5,  0.5,  0.5,  1.0, 0.0,
-             -0.5,  0.5, -0.5,  1.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-             -0.5,  0.5,  0.5,  1.0, 0.0,
-
-              0.5,  0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5,  0.5,  0.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5, -0.5,  1.0, 1.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-
-             -0.5,  0.5, -0.5,  0.0, 1.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-             -0.5,  0.5,  0.5,  0.0, 0.0,
-             -0.5,  0.5, -0.5,  0.0, 1.0
+            -0.5, -0.5, -0.5, 0.0, 0.0, 0.5, -0.5, -0.5, 1.0, 0.0, 0.5, 0.5, -0.5, 1.0, 1.0, 0.5, 0.5, -0.5, 1.0, 1.0,
+            -0.5, 0.5, -0.5, 0.0, 1.0, -0.5, -0.5, -0.5, 0.0, 0.0, -0.5, -0.5, 0.5, 0.0, 0.0, 0.5, -0.5, 0.5, 1.0, 0.0,
+            0.5, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, 0.5, 1.0, 1.0, -0.5, 0.5, 0.5, 0.0, 1.0, -0.5, -0.5, 0.5, 0.0, 0.0,
+            -0.5, 0.5, 0.5, 1.0, 0.0, -0.5, 0.5, -0.5, 1.0, 1.0, -0.5, -0.5, -0.5, 0.0, 1.0, -0.5, -0.5, -0.5, 0.0,
+            1.0, -0.5, -0.5, 0.5, 0.0, 0.0, -0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, -0.5, 1.0,
+            1.0, 0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0,
+            0.0, -0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, -0.5, 1.0, 1.0, 0.5, -0.5, 0.5, 1.0, 0.0, 0.5, -0.5, 0.5, 1.0,
+            0.0, -0.5, -0.5, 0.5, 0.0, 0.0, -0.5, -0.5, -0.5, 0.0, 1.0, -0.5, 0.5, -0.5, 0.0, 1.0, 0.5, 0.5, -0.5, 1.0,
+            1.0, 0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, 0.5, 1.0, 0.0, -0.5, 0.5, 0.5, 0.0, 0.0, -0.5, 0.5, -0.5, 0.0, 1.0,
         ];
         // world space positions of our cubes
-        let cubePositions: [Vector3<f32>; 10] = [vec3(0.0, 0.0, 0.0),
-                                                 vec3(2.0, 5.0, -15.0),
-                                                 vec3(-1.5, -2.2, -2.5),
-                                                 vec3(-3.8, -2.0, -12.3),
-                                                 vec3(2.4, -0.4, -3.5),
-                                                 vec3(-1.7, 3.0, -7.5),
-                                                 vec3(1.3, -2.0, -2.5),
-                                                 vec3(1.5, 2.0, -2.5),
-                                                 vec3(1.5, 0.2, -1.5),
-                                                 vec3(-1.3, 1.0, -1.5)];
+        let cubePositions: [Vector3<f32>; 10] = [
+            vec3(0.0, 0.0, 0.0),
+            vec3(2.0, 5.0, -15.0),
+            vec3(-1.5, -2.2, -2.5),
+            vec3(-3.8, -2.0, -12.3),
+            vec3(2.4, -0.4, -3.5),
+            vec3(-1.7, 3.0, -7.5),
+            vec3(1.3, -2.0, -2.5),
+            vec3(1.5, 2.0, -2.5),
+            vec3(1.5, 0.2, -1.5),
+            vec3(-1.3, 1.0, -1.5),
+        ];
         let (mut VBO, mut VAO) = (0, 0);
         gl::GenVertexArrays(1, &mut VAO);
         gl::GenBuffers(1, &mut VBO);
@@ -151,10 +116,12 @@ pub fn main_1_7_3() {
         gl::BindVertexArray(VAO);
 
         gl::BindBuffer(gl::ARRAY_BUFFER, VBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &vertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &vertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
 
         let stride = 5 * mem::size_of::<GLfloat>() as GLsizei;
         // position attribute
@@ -163,7 +130,6 @@ pub fn main_1_7_3() {
         // texture coord attribute
         gl::VertexAttribPointer(1, 2, gl::FLOAT, gl::FALSE, stride, (3 * mem::size_of::<GLfloat>()) as *const c_void);
         gl::EnableVertexAttribArray(1);
-
 
         // load and create a texture
         // -------------------------
@@ -181,15 +147,17 @@ pub fn main_1_7_3() {
         // load image, create texture and generate mipmaps
         let img = image::open(Path::new("resources/textures/container.jpg")).expect("Failed to load texture");
         let data = img.raw_pixels();
-        gl::TexImage2D(gl::TEXTURE_2D,
-                       0,
-                       gl::RGB as i32,
-                       img.width() as i32,
-                       img.height() as i32,
-                       0,
-                       gl::RGB,
-                       gl::UNSIGNED_BYTE,
-                       &data[0] as *const u8 as *const c_void);
+        gl::TexImage2D(
+            gl::TEXTURE_2D,
+            0,
+            gl::RGB as i32,
+            img.width() as i32,
+            img.height() as i32,
+            0,
+            gl::RGB,
+            gl::UNSIGNED_BYTE,
+            &data[0] as *const u8 as *const c_void,
+        );
         gl::GenerateMipmap(gl::TEXTURE_2D);
         // texture 2
         // ---------
@@ -206,15 +174,17 @@ pub fn main_1_7_3() {
         let img = img.flipv(); // flip loaded texture on the y-axis.
         let data = img.raw_pixels();
         // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
-        gl::TexImage2D(gl::TEXTURE_2D,
-                       0,
-                       gl::RGB as i32,
-                       img.width() as i32,
-                       img.height() as i32,
-                       0,
-                       gl::RGBA,
-                       gl::UNSIGNED_BYTE,
-                       &data[0] as *const u8 as *const c_void);
+        gl::TexImage2D(
+            gl::TEXTURE_2D,
+            0,
+            gl::RGB as i32,
+            img.width() as i32,
+            img.height() as i32,
+            0,
+            gl::RGBA,
+            gl::UNSIGNED_BYTE,
+            &data[0] as *const u8 as *const c_void,
+        );
         gl::GenerateMipmap(gl::TEXTURE_2D);
 
         // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
@@ -237,14 +207,16 @@ pub fn main_1_7_3() {
 
         // events
         // -----
-        process_events(&events,
-                       &mut firstMouse,
-                       &mut lastX,
-                       &mut lastY,
-                       &mut yaw,
-                       &mut pitch,
-                       &mut cameraFront,
-                       &mut fov);
+        process_events(
+            &events,
+            &mut firstMouse,
+            &mut lastX,
+            &mut lastY,
+            &mut yaw,
+            &mut pitch,
+            &mut cameraFront,
+            &mut fov,
+        );
 
         // input
         // -----
@@ -303,14 +275,16 @@ pub fn main_1_7_3() {
 // NOTE: not the same version as in common.rs!
 #[allow(unknown_lints)]
 #[allow(clippy::too_many_arguments)]
-fn process_events(events: &Receiver<(f64, glfw::WindowEvent)>,
-                  firstMouse: &mut bool,
-                  lastX: &mut f32,
-                  lastY: &mut f32,
-                  yaw: &mut f32,
-                  pitch: &mut f32,
-                  cameraFront: &mut Vector3<f32>,
-                  fov: &mut f32) {
+fn process_events(
+    events: &Receiver<(f64, glfw::WindowEvent)>,
+    firstMouse: &mut bool,
+    lastX: &mut f32,
+    lastY: &mut f32,
+    yaw: &mut f32,
+    pitch: &mut f32,
+    cameraFront: &mut Vector3<f32>,
+    fov: &mut f32,
+) {
     for (_, event) in glfw::flush_messages(events) {
         match event {
             glfw::WindowEvent::FramebufferSize(width, height) => {
@@ -370,10 +344,12 @@ fn process_events(events: &Receiver<(f64, glfw::WindowEvent)>,
 }
 
 /// NOTE: not the same function as the one in common.rs!
-fn processInput(window: &mut glfw::Window,
-                deltaTime: f32,
-                cameraPos: &mut Point3<f32>,
-                cameraFront: &mut Vector3<f32>) {
+fn processInput(
+    window: &mut glfw::Window,
+    deltaTime: f32,
+    cameraPos: &mut Point3<f32>,
+    cameraFront: &mut Vector3<f32>,
+) {
     if window.get_key(Key::Escape) == Action::Press {
         window.set_should_close(true)
     }
@@ -391,5 +367,4 @@ fn processInput(window: &mut glfw::Window,
     if window.get_key(Key::D) == Action::Press {
         *cameraPos += cameraFront.cross(cameraUp).normalize() * cameraSpeed;
     }
-
 }

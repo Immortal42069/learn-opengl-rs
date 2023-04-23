@@ -1,25 +1,24 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_snake_case)]
 extern crate glfw;
-use self::glfw::{Context, Key, Action};
+use self::glfw::{Action, Context, Key};
 
 extern crate gl;
 use self::gl::types::*;
 
-use std::sync::mpsc::Receiver;
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
 use std::path::Path;
-use std::ffi::CStr;
+use std::ptr;
+use std::sync::mpsc::Receiver;
 
 use crate::shader::Shader;
 
-
 use image::GenericImage;
 
-use cgmath::{Matrix4, vec3,  Deg, Rad, perspective};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec3, Deg, Matrix4, Rad};
 
 // settings
 const SCR_WIDTH: u32 = 800;
@@ -36,7 +35,7 @@ unsafe fn glCheckError_(file: &str, line: u32) -> u32 {
             gl::STACK_UNDERFLOW => "STACK_UNDERFLOW",
             gl::OUT_OF_MEMORY => "OUT_OF_MEMORY",
             gl::INVALID_FRAMEBUFFER_OPERATION => "INVALID_FRAMEBUFFER_OPERATION",
-            _ => "unknown GL error code"
+            _ => "unknown GL error code",
         };
 
         println!("{} | {} ({})", error, file, line);
@@ -47,56 +46,57 @@ unsafe fn glCheckError_(file: &str, line: u32) -> u32 {
 }
 
 macro_rules! glCheckError {
-    () => (
+    () => {
         glCheckError_(file!(), line!())
-    )
+    };
 }
 
-extern "system" fn glDebugOutput(source: gl::types::GLenum,
-                                 type_: gl::types::GLenum,
-                                 id: gl::types::GLuint,
-                                 severity: gl::types::GLenum,
-                                 _length: gl::types::GLsizei,
-                                 message: *const gl::types::GLchar,
-                                 _userParam: *mut c_void)
-{
+extern "system" fn glDebugOutput(
+    source: gl::types::GLenum,
+    type_: gl::types::GLenum,
+    id: gl::types::GLuint,
+    severity: gl::types::GLenum,
+    _length: gl::types::GLsizei,
+    message: *const gl::types::GLchar,
+    _userParam: *mut c_void,
+) {
     if id == 131_169 || id == 131_185 || id == 131_218 || id == 131_204 {
         // ignore these non-significant error codes
-        return
+        return;
     }
 
     println!("---------------");
     let message = unsafe { CStr::from_ptr(message).to_str().unwrap() };
     println!("Debug message ({}): {}", id, message);
     match source {
-        gl::DEBUG_SOURCE_API =>             println!("Source: API"),
-        gl::DEBUG_SOURCE_WINDOW_SYSTEM =>   println!("Source: Window System"),
+        gl::DEBUG_SOURCE_API => println!("Source: API"),
+        gl::DEBUG_SOURCE_WINDOW_SYSTEM => println!("Source: Window System"),
         gl::DEBUG_SOURCE_SHADER_COMPILER => println!("Source: Shader Compiler"),
-        gl::DEBUG_SOURCE_THIRD_PARTY =>     println!("Source: Third Party"),
-        gl::DEBUG_SOURCE_APPLICATION =>     println!("Source: Application"),
-        gl::DEBUG_SOURCE_OTHER =>           println!("Source: Other"),
-        _ =>                                println!("Source: Unknown enum value")
+        gl::DEBUG_SOURCE_THIRD_PARTY => println!("Source: Third Party"),
+        gl::DEBUG_SOURCE_APPLICATION => println!("Source: Application"),
+        gl::DEBUG_SOURCE_OTHER => println!("Source: Other"),
+        _ => println!("Source: Unknown enum value"),
     }
 
     match type_ {
-       gl::DEBUG_TYPE_ERROR =>               println!("Type: Error"),
-       gl::DEBUG_TYPE_DEPRECATED_BEHAVIOR => println!("Type: Deprecated Behaviour"),
-       gl::DEBUG_TYPE_UNDEFINED_BEHAVIOR =>  println!("Type: Undefined Behaviour"),
-       gl::DEBUG_TYPE_PORTABILITY =>         println!("Type: Portability"),
-       gl::DEBUG_TYPE_PERFORMANCE =>         println!("Type: Performance"),
-       gl::DEBUG_TYPE_MARKER =>              println!("Type: Marker"),
-       gl::DEBUG_TYPE_PUSH_GROUP =>          println!("Type: Push Group"),
-       gl::DEBUG_TYPE_POP_GROUP =>           println!("Type: Pop Group"),
-       gl::DEBUG_TYPE_OTHER =>               println!("Type: Other"),
-       _ =>                                  println!("Type: Unknown enum value")
+        gl::DEBUG_TYPE_ERROR => println!("Type: Error"),
+        gl::DEBUG_TYPE_DEPRECATED_BEHAVIOR => println!("Type: Deprecated Behaviour"),
+        gl::DEBUG_TYPE_UNDEFINED_BEHAVIOR => println!("Type: Undefined Behaviour"),
+        gl::DEBUG_TYPE_PORTABILITY => println!("Type: Portability"),
+        gl::DEBUG_TYPE_PERFORMANCE => println!("Type: Performance"),
+        gl::DEBUG_TYPE_MARKER => println!("Type: Marker"),
+        gl::DEBUG_TYPE_PUSH_GROUP => println!("Type: Push Group"),
+        gl::DEBUG_TYPE_POP_GROUP => println!("Type: Pop Group"),
+        gl::DEBUG_TYPE_OTHER => println!("Type: Other"),
+        _ => println!("Type: Unknown enum value"),
     }
 
     match severity {
-       gl::DEBUG_SEVERITY_HIGH =>         println!("Severity: high"),
-       gl::DEBUG_SEVERITY_MEDIUM =>       println!("Severity: medium"),
-       gl::DEBUG_SEVERITY_LOW =>          println!("Severity: low"),
-       gl::DEBUG_SEVERITY_NOTIFICATION => println!("Severity: notification"),
-       _ =>                               println!("Severity: Unknown enum value")
+        gl::DEBUG_SEVERITY_HIGH => println!("Severity: high"),
+        gl::DEBUG_SEVERITY_MEDIUM => println!("Severity: medium"),
+        gl::DEBUG_SEVERITY_LOW => println!("Severity: low"),
+        gl::DEBUG_SEVERITY_NOTIFICATION => println!("Severity: notification"),
+        _ => println!("Severity: Unknown enum value"),
     }
 }
 
@@ -113,7 +113,8 @@ pub fn main_7_1() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -136,8 +137,7 @@ pub fn main_7_1() {
             gl::Enable(gl::DEBUG_OUTPUT_SYNCHRONOUS); // makes sure errors are displayed synchronously
             gl::DebugMessageCallback(Some(glDebugOutput), ptr::null());
             gl::DebugMessageControl(gl::DONT_CARE, gl::DONT_CARE, gl::DONT_CARE, 0, ptr::null(), gl::TRUE);
-        }
-        else {
+        } else {
             println!("Debug Context not active! Check if your driver supports the extension.")
         }
 
@@ -147,64 +147,64 @@ pub fn main_7_1() {
         gl::Enable(gl::CULL_FACE);
 
         // OpenGL initial state
-        let shader = Shader::new(
-            "src/_7_in_practice/shaders/debugging.vs",
-            "src/_7_in_practice/shaders/debugging.fs");
+        let shader = Shader::new("src/_7_in_practice/shaders/debugging.vs", "src/_7_in_practice/shaders/debugging.fs");
 
         // configure 3D cube
         let (mut cubeVAO, mut cubeVBO) = (0, 0);
         let vertices: [f32; 180] = [
             // back face
-            -0.5, -0.5, -0.5,  0.0,  0.0, // Bottom-left
-             0.5,  0.5, -0.5,  1.0,  1.0, // top-right
-             0.5, -0.5, -0.5,  1.0,  0.0, // bottom-right
-             0.5,  0.5, -0.5,  1.0,  1.0, // top-right
-            -0.5, -0.5, -0.5,  0.0,  0.0, // bottom-left
-            -0.5,  0.5, -0.5,  0.0,  1.0, // top-left
+            -0.5, -0.5, -0.5, 0.0, 0.0, // Bottom-left
+            0.5, 0.5, -0.5, 1.0, 1.0, // top-right
+            0.5, -0.5, -0.5, 1.0, 0.0, // bottom-right
+            0.5, 0.5, -0.5, 1.0, 1.0, // top-right
+            -0.5, -0.5, -0.5, 0.0, 0.0, // bottom-left
+            -0.5, 0.5, -0.5, 0.0, 1.0, // top-left
             // front face
-            -0.5, -0.5,  0.5,  0.0,  0.0, // bottom-left
-             0.5, -0.5,  0.5,  1.0,  0.0, // bottom-right
-             0.5,  0.5,  0.5,  1.0,  1.0, // top-right
-             0.5,  0.5,  0.5,  1.0,  1.0, // top-right
-            -0.5,  0.5,  0.5,  0.0,  1.0, // top-left
-            -0.5, -0.5,  0.5,  0.0,  0.0, // bottom-left
+            -0.5, -0.5, 0.5, 0.0, 0.0, // bottom-left
+            0.5, -0.5, 0.5, 1.0, 0.0, // bottom-right
+            0.5, 0.5, 0.5, 1.0, 1.0, // top-right
+            0.5, 0.5, 0.5, 1.0, 1.0, // top-right
+            -0.5, 0.5, 0.5, 0.0, 1.0, // top-left
+            -0.5, -0.5, 0.5, 0.0, 0.0, // bottom-left
             // left face
-            -0.5,  0.5,  0.5, -1.0,  0.0, // top-right
-            -0.5,  0.5, -0.5, -1.0,  1.0, // top-left
-            -0.5, -0.5, -0.5, -0.0,  1.0, // bottom-left
-            -0.5, -0.5, -0.5, -0.0,  1.0, // bottom-left
-            -0.5, -0.5,  0.5, -0.0,  0.0, // bottom-right
-            -0.5,  0.5,  0.5, -1.0,  0.0, // top-right
+            -0.5, 0.5, 0.5, -1.0, 0.0, // top-right
+            -0.5, 0.5, -0.5, -1.0, 1.0, // top-left
+            -0.5, -0.5, -0.5, -0.0, 1.0, // bottom-left
+            -0.5, -0.5, -0.5, -0.0, 1.0, // bottom-left
+            -0.5, -0.5, 0.5, -0.0, 0.0, // bottom-right
+            -0.5, 0.5, 0.5, -1.0, 0.0, // top-right
             // right face
-             0.5,  0.5,  0.5,  1.0,  0.0, // top-left
-             0.5, -0.5, -0.5,  0.0,  1.0, // bottom-right
-             0.5,  0.5, -0.5,  1.0,  1.0, // top-right
-             0.5, -0.5, -0.5,  0.0,  1.0, // bottom-right
-             0.5,  0.5,  0.5,  1.0,  0.0, // top-left
-             0.5, -0.5,  0.5,  0.0,  0.0, // bottom-left
+            0.5, 0.5, 0.5, 1.0, 0.0, // top-left
+            0.5, -0.5, -0.5, 0.0, 1.0, // bottom-right
+            0.5, 0.5, -0.5, 1.0, 1.0, // top-right
+            0.5, -0.5, -0.5, 0.0, 1.0, // bottom-right
+            0.5, 0.5, 0.5, 1.0, 0.0, // top-left
+            0.5, -0.5, 0.5, 0.0, 0.0, // bottom-left
             // bottom face
-            -0.5, -0.5, -0.5,  0.0,  1.0, // top-right
-             0.5, -0.5, -0.5,  1.0,  1.0, // top-left
-             0.5, -0.5,  0.5,  1.0,  0.0, // bottom-left
-             0.5, -0.5,  0.5,  1.0,  0.0, // bottom-left
-            -0.5, -0.5,  0.5,  0.0,  0.0, // bottom-right
-            -0.5, -0.5, -0.5,  0.0,  1.0, // top-right
+            -0.5, -0.5, -0.5, 0.0, 1.0, // top-right
+            0.5, -0.5, -0.5, 1.0, 1.0, // top-left
+            0.5, -0.5, 0.5, 1.0, 0.0, // bottom-left
+            0.5, -0.5, 0.5, 1.0, 0.0, // bottom-left
+            -0.5, -0.5, 0.5, 0.0, 0.0, // bottom-right
+            -0.5, -0.5, -0.5, 0.0, 1.0, // top-right
             // top face
-            -0.5,  0.5, -0.5,  0.0,  1.0, // top-left
-             0.5,  0.5,  0.5,  1.0,  0.0, // bottom-right
-             0.5,  0.5, -0.5,  1.0,  1.0, // top-right
-             0.5,  0.5,  0.5,  1.0,  0.0, // bottom-right
-            -0.5,  0.5, -0.5,  0.0,  1.0, // top-left
-            -0.5,  0.5,  0.5,  0.0,  0.0  // bottom-left
+            -0.5, 0.5, -0.5, 0.0, 1.0, // top-left
+            0.5, 0.5, 0.5, 1.0, 0.0, // bottom-right
+            0.5, 0.5, -0.5, 1.0, 1.0, // top-right
+            0.5, 0.5, 0.5, 1.0, 0.0, // bottom-right
+            -0.5, 0.5, -0.5, 0.0, 1.0, // top-left
+            -0.5, 0.5, 0.5, 0.0, 0.0, // bottom-left
         ];
         gl::GenVertexArrays(1, &mut cubeVAO);
         gl::GenBuffers(1, &mut cubeVBO);
         // fill buffer
         gl::BindBuffer(gl::ARRAY_BUFFER, cubeVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &vertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (vertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &vertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         // link vertex attributes
         gl::BindVertexArray(cubeVAO);
         gl::EnableVertexAttribArray(0);
@@ -221,15 +221,17 @@ pub fn main_7_1() {
         gl::BindTexture(gl::TEXTURE_2D, texture);
         let img = image::open(Path::new("resources/textures/wood.png")).expect("Failed to load texture");
         let data = img.raw_pixels();
-        gl::TexImage2D(gl::TEXTURE_2D,
-                       0,
-                       gl::RGB as i32,
-                       img.width() as i32,
-                       img.height() as i32,
-                       0,
-                       gl::RGB,
-                       gl::UNSIGNED_BYTE,
-                       &data[0] as *const u8 as *const c_void);
+        gl::TexImage2D(
+            gl::TEXTURE_2D,
+            0,
+            gl::RGB as i32,
+            img.width() as i32,
+            img.height() as i32,
+            0,
+            gl::RGB,
+            gl::UNSIGNED_BYTE,
+            &data[0] as *const u8 as *const c_void,
+        );
         gl::GenerateMipmap(gl::TEXTURE_2D);
 
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
@@ -269,9 +271,8 @@ pub fn main_7_1() {
 
             gl::BindTexture(gl::TEXTURE_2D, texture);
             gl::BindVertexArray(cubeVAO);
-                gl::DrawArrays(gl::TRIANGLES, 0, 36);
+            gl::DrawArrays(gl::TRIANGLES, 0, 36);
             gl::BindVertexArray(0);
-
         }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

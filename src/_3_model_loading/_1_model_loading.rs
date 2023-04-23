@@ -7,12 +7,12 @@ extern crate gl;
 
 use std::ffi::CStr;
 
-use crate::common::{process_events, processInput};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{processInput, process_events};
 use crate::model::Model;
+use crate::shader::Shader;
 
-use cgmath::{Matrix4, vec3, Point3, Deg, perspective};
+use cgmath::{perspective, vec3, Deg, Matrix4, Point3};
 
 // settings
 const SCR_WIDTH: u32 = 800;
@@ -42,7 +42,8 @@ pub fn main_3_1() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -66,7 +67,8 @@ pub fn main_3_1() {
         // -------------------------
         let ourShader = Shader::new(
             "src/_3_model_loading/shaders/1.model_loading.vs",
-            "src/_3_model_loading/shaders/1.model_loading.fs");
+            "src/_3_model_loading/shaders/1.model_loading.fs",
+        );
 
         // load models
         // -----------
@@ -105,14 +107,15 @@ pub fn main_3_1() {
             ourShader.useProgram();
 
             // view/projection transformations
-            let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
+            let projection: Matrix4<f32> =
+                perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
             let view = camera.GetViewMatrix();
             ourShader.setMat4(c_str!("projection"), &projection);
             ourShader.setMat4(c_str!("view"), &view);
 
             // render the loaded model
             let mut model = Matrix4::<f32>::from_translation(vec3(0.0, -1.75, 0.0)); // translate it down so it's at the center of the scene
-            model = model * Matrix4::from_scale(0.2);  // it's a bit too big for our scene, so scale it down
+            model = model * Matrix4::from_scale(0.2); // it's a bit too big for our scene, so scale it down
             ourShader.setMat4(c_str!("model"), &model);
             ourModel.Draw(&ourShader);
         }
@@ -122,5 +125,4 @@ pub fn main_3_1() {
         window.swap_buffers();
         glfw.poll_events();
     }
-
 }

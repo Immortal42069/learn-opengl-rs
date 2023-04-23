@@ -7,17 +7,17 @@ use self::glfw::Context;
 extern crate gl;
 use self::gl::types::*;
 
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
-use std::ffi::CStr;
+use std::ptr;
 
-use crate::common::{process_events, processInput, loadTexture};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{loadTexture, processInput, process_events};
+use crate::shader::Shader;
 
-use cgmath::{Matrix4, vec3,  Deg, perspective, Point3};
 use cgmath::prelude::*;
+use cgmath::{perspective, vec3, Deg, Matrix4, Point3};
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -47,7 +47,8 @@ pub fn main_4_1_1() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -72,63 +73,27 @@ pub fn main_4_1_1() {
         // ------------------------------------
         let shader = Shader::new(
             "src/_4_advanced_opengl/shaders/1.1.depth_testing.vs",
-            "src/_4_advanced_opengl/shaders/1.1.depth_testing.fs");
+            "src/_4_advanced_opengl/shaders/1.1.depth_testing.fs",
+        );
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         let cubeVertices: [f32; 180] = [
-             // positions       // texture Coords
-             -0.5, -0.5, -0.5,  0.0, 0.0,
-              0.5, -0.5, -0.5,  1.0, 0.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-             -0.5,  0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 0.0,
-
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 1.0,
-              0.5,  0.5,  0.5,  1.0, 1.0,
-             -0.5,  0.5,  0.5,  0.0, 1.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-
-             -0.5,  0.5,  0.5,  1.0, 0.0,
-             -0.5,  0.5, -0.5,  1.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-             -0.5,  0.5,  0.5,  1.0, 0.0,
-
-              0.5,  0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5,  0.5,  0.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5, -0.5,  1.0, 1.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-
-             -0.5,  0.5, -0.5,  0.0, 1.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-             -0.5,  0.5,  0.5,  0.0, 0.0,
-             -0.5,  0.5, -0.5,  0.0, 1.0
+            // positions       // texture Coords
+            -0.5, -0.5, -0.5, 0.0, 0.0, 0.5, -0.5, -0.5, 1.0, 0.0, 0.5, 0.5, -0.5, 1.0, 1.0, 0.5, 0.5, -0.5, 1.0, 1.0,
+            -0.5, 0.5, -0.5, 0.0, 1.0, -0.5, -0.5, -0.5, 0.0, 0.0, -0.5, -0.5, 0.5, 0.0, 0.0, 0.5, -0.5, 0.5, 1.0, 0.0,
+            0.5, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, 0.5, 1.0, 1.0, -0.5, 0.5, 0.5, 0.0, 1.0, -0.5, -0.5, 0.5, 0.0, 0.0,
+            -0.5, 0.5, 0.5, 1.0, 0.0, -0.5, 0.5, -0.5, 1.0, 1.0, -0.5, -0.5, -0.5, 0.0, 1.0, -0.5, -0.5, -0.5, 0.0,
+            1.0, -0.5, -0.5, 0.5, 0.0, 0.0, -0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, -0.5, 1.0,
+            1.0, 0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0,
+            0.0, -0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, -0.5, 1.0, 1.0, 0.5, -0.5, 0.5, 1.0, 0.0, 0.5, -0.5, 0.5, 1.0,
+            0.0, -0.5, -0.5, 0.5, 0.0, 0.0, -0.5, -0.5, -0.5, 0.0, 1.0, -0.5, 0.5, -0.5, 0.0, 1.0, 0.5, 0.5, -0.5, 1.0,
+            1.0, 0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, 0.5, 1.0, 0.0, -0.5, 0.5, 0.5, 0.0, 0.0, -0.5, 0.5, -0.5, 0.0, 1.0,
         ];
         let planeVertices: [f32; 30] = [
             // positions       // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-             5.0, -0.5,  5.0,  2.0, 0.0,
-            -5.0, -0.5,  5.0,  0.0, 0.0,
-            -5.0, -0.5, -5.0,  0.0, 2.0,
-
-             5.0, -0.5,  5.0,  2.0, 0.0,
-            -5.0, -0.5, -5.0,  0.0, 2.0,
-             5.0, -0.5, -5.0,  2.0, 2.0
+            5.0, -0.5, 5.0, 2.0, 0.0, -5.0, -0.5, 5.0, 0.0, 0.0, -5.0, -0.5, -5.0, 0.0, 2.0, 5.0, -0.5, 5.0, 2.0, 0.0,
+            -5.0, -0.5, -5.0, 0.0, 2.0, 5.0, -0.5, -5.0, 2.0, 2.0,
         ];
         // cube VAO
         let (mut cubeVAO, mut cubeVBO) = (0, 0);
@@ -136,10 +101,12 @@ pub fn main_4_1_1() {
         gl::GenBuffers(1, &mut cubeVBO);
         gl::BindVertexArray(cubeVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, cubeVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &cubeVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &cubeVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         let stride = 5 * mem::size_of::<GLfloat>() as GLsizei;
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
@@ -152,10 +119,12 @@ pub fn main_4_1_1() {
         gl::GenBuffers(1, &mut planeVBO);
         gl::BindVertexArray(planeVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, planeVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (planeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &planeVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (planeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &planeVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
         gl::EnableVertexAttribArray(1);
@@ -201,7 +170,8 @@ pub fn main_4_1_1() {
             shader.useProgram();
             let mut model: Matrix4<f32>;
             let view = camera.GetViewMatrix();
-            let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32 , 0.1, 100.0);
+            let projection: Matrix4<f32> =
+                perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
             shader.setMat4(c_str!("view"), &view);
             shader.setMat4(c_str!("projection"), &projection);
             // cubes

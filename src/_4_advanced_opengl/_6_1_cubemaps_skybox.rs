@@ -1,11 +1,11 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_snake_case)]
 
-use std::ptr;
+use std::ffi::CStr;
 use std::mem;
 use std::os::raw::c_void;
 use std::path::Path;
-use std::ffi::CStr;
+use std::ptr;
 
 extern crate glfw;
 use self::glfw::Context;
@@ -13,15 +13,14 @@ use self::glfw::Context;
 extern crate gl;
 use self::gl::types::*;
 
-use cgmath::{Matrix4,  Deg, perspective, Point3};
 use cgmath::prelude::*;
-
+use cgmath::{perspective, Deg, Matrix4, Point3};
 
 use image::GenericImage;
 
-use crate::common::{process_events, processInput, loadTexture};
-use crate::shader::Shader;
 use crate::camera::Camera;
+use crate::common::{loadTexture, processInput, process_events};
+use crate::shader::Shader;
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -51,7 +50,8 @@ pub fn main_4_6_1() {
 
     // glfw window creation
     // --------------------
-    let (mut window, events) = glfw.create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw
+        .create_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window");
 
     window.make_current();
@@ -76,100 +76,33 @@ pub fn main_4_6_1() {
         // ------------------------------------
         let shader = Shader::new(
             "src/_4_advanced_opengl/shaders/6.1.cubemaps.vs",
-            "src/_4_advanced_opengl/shaders/6.1.cubemaps.fs");
-        let skyboxShader = Shader::new(
-            "src/_4_advanced_opengl/shaders/6.1.skybox.vs",
-            "src/_4_advanced_opengl/shaders/6.1.skybox.fs");
+            "src/_4_advanced_opengl/shaders/6.1.cubemaps.fs",
+        );
+        let skyboxShader =
+            Shader::new("src/_4_advanced_opengl/shaders/6.1.skybox.vs", "src/_4_advanced_opengl/shaders/6.1.skybox.fs");
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         let cubeVertices: [f32; 180] = [
-             // positions       // texture Coords
-             -0.5, -0.5, -0.5,  0.0, 0.0,
-              0.5, -0.5, -0.5,  1.0, 0.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-             -0.5,  0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 0.0,
-
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 1.0,
-              0.5,  0.5,  0.5,  1.0, 1.0,
-             -0.5,  0.5,  0.5,  0.0, 1.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-
-             -0.5,  0.5,  0.5,  1.0, 0.0,
-             -0.5,  0.5, -0.5,  1.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-             -0.5,  0.5,  0.5,  1.0, 0.0,
-
-              0.5,  0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5,  0.5,  0.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-              0.5, -0.5, -0.5,  1.0, 1.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-              0.5, -0.5,  0.5,  1.0, 0.0,
-             -0.5, -0.5,  0.5,  0.0, 0.0,
-             -0.5, -0.5, -0.5,  0.0, 1.0,
-
-             -0.5,  0.5, -0.5,  0.0, 1.0,
-              0.5,  0.5, -0.5,  1.0, 1.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-              0.5,  0.5,  0.5,  1.0, 0.0,
-             -0.5,  0.5,  0.5,  0.0, 0.0,
-             -0.5,  0.5, -0.5,  0.0, 1.0
+            // positions       // texture Coords
+            -0.5, -0.5, -0.5, 0.0, 0.0, 0.5, -0.5, -0.5, 1.0, 0.0, 0.5, 0.5, -0.5, 1.0, 1.0, 0.5, 0.5, -0.5, 1.0, 1.0,
+            -0.5, 0.5, -0.5, 0.0, 1.0, -0.5, -0.5, -0.5, 0.0, 0.0, -0.5, -0.5, 0.5, 0.0, 0.0, 0.5, -0.5, 0.5, 1.0, 0.0,
+            0.5, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, 0.5, 1.0, 1.0, -0.5, 0.5, 0.5, 0.0, 1.0, -0.5, -0.5, 0.5, 0.0, 0.0,
+            -0.5, 0.5, 0.5, 1.0, 0.0, -0.5, 0.5, -0.5, 1.0, 1.0, -0.5, -0.5, -0.5, 0.0, 1.0, -0.5, -0.5, -0.5, 0.0,
+            1.0, -0.5, -0.5, 0.5, 0.0, 0.0, -0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, -0.5, 1.0,
+            1.0, 0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0,
+            0.0, -0.5, -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, -0.5, 1.0, 1.0, 0.5, -0.5, 0.5, 1.0, 0.0, 0.5, -0.5, 0.5, 1.0,
+            0.0, -0.5, -0.5, 0.5, 0.0, 0.0, -0.5, -0.5, -0.5, 0.0, 1.0, -0.5, 0.5, -0.5, 0.0, 1.0, 0.5, 0.5, -0.5, 1.0,
+            1.0, 0.5, 0.5, 0.5, 1.0, 0.0, 0.5, 0.5, 0.5, 1.0, 0.0, -0.5, 0.5, 0.5, 0.0, 0.0, -0.5, 0.5, -0.5, 0.0, 1.0,
         ];
         let skyboxVertices: [f32; 108] = [
             // positions
-            -1.0,  1.0, -1.0,
-            -1.0, -1.0, -1.0,
-             1.0, -1.0, -1.0,
-             1.0, -1.0, -1.0,
-             1.0,  1.0, -1.0,
-            -1.0,  1.0, -1.0,
-
-            -1.0, -1.0,  1.0,
-            -1.0, -1.0, -1.0,
-            -1.0,  1.0, -1.0,
-            -1.0,  1.0, -1.0,
-            -1.0,  1.0,  1.0,
-            -1.0, -1.0,  1.0,
-
-             1.0, -1.0, -1.0,
-             1.0, -1.0,  1.0,
-             1.0,  1.0,  1.0,
-             1.0,  1.0,  1.0,
-             1.0,  1.0, -1.0,
-             1.0, -1.0, -1.0,
-
-            -1.0, -1.0,  1.0,
-            -1.0,  1.0,  1.0,
-             1.0,  1.0,  1.0,
-             1.0,  1.0,  1.0,
-             1.0, -1.0,  1.0,
-            -1.0, -1.0,  1.0,
-
-            -1.0,  1.0, -1.0,
-             1.0,  1.0, -1.0,
-             1.0,  1.0,  1.0,
-             1.0,  1.0,  1.0,
-            -1.0,  1.0,  1.0,
-            -1.0,  1.0, -1.0,
-
-            -1.0, -1.0, -1.0,
-            -1.0, -1.0,  1.0,
-             1.0, -1.0, -1.0,
-             1.0, -1.0, -1.0,
-            -1.0, -1.0,  1.0,
-             1.0, -1.0,  1.0
+            -1.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0,
+            -1.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0,
+            -1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0,
+            -1.0, -1.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0,
         ];
 
         // cube VAO
@@ -178,10 +111,12 @@ pub fn main_4_6_1() {
         gl::GenBuffers(1, &mut cubeVBO);
         gl::BindVertexArray(cubeVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, cubeVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &cubeVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (cubeVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &cubeVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         let mut stride = 5 * mem::size_of::<GLfloat>() as GLsizei;
         gl::EnableVertexAttribArray(0);
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
@@ -194,10 +129,12 @@ pub fn main_4_6_1() {
         gl::GenBuffers(1, &mut skyboxVBO);
         gl::BindVertexArray(skyboxVAO);
         gl::BindBuffer(gl::ARRAY_BUFFER, skyboxVBO);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (skyboxVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       &skyboxVertices[0] as *const f32 as *const c_void,
-                       gl::STATIC_DRAW);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (skyboxVertices.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+            &skyboxVertices[0] as *const f32 as *const c_void,
+            gl::STATIC_DRAW,
+        );
         gl::EnableVertexAttribArray(0);
         stride = 3 * mem::size_of::<GLfloat>() as GLsizei;
         gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, ptr::null());
@@ -212,7 +149,7 @@ pub fn main_4_6_1() {
             "resources/textures/skybox/top.jpg",
             "resources/textures/skybox/bottom.jpg",
             "resources/textures/skybox/back.jpg",
-            "resources/textures/skybox/front.jpg"
+            "resources/textures/skybox/front.jpg",
         ];
         let cubemapTexture = loadCubemap(&faces);
 
@@ -253,7 +190,8 @@ pub fn main_4_6_1() {
             shader.useProgram();
             let model: Matrix4<f32> = Matrix4::identity();
             let mut view = camera.GetViewMatrix();
-            let projection: Matrix4<f32> = perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32 , 0.1, 100.0);
+            let projection: Matrix4<f32> =
+                perspective(Deg(camera.Zoom), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
             shader.setMat4(c_str!("model"), &model);
             shader.setMat4(c_str!("view"), &view);
             shader.setMat4(c_str!("projection"), &projection);
@@ -264,7 +202,7 @@ pub fn main_4_6_1() {
             gl::DrawArrays(gl::TRIANGLES, 0, 36);
 
             // draw skybox as last
-            gl::DepthFunc(gl::LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+            gl::DepthFunc(gl::LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content
             skyboxShader.useProgram();
             // remove translation from the view matrix
             view = camera.GetViewMatrix();
@@ -318,9 +256,15 @@ unsafe fn loadCubemap(faces: &[&str]) -> u32 {
         let data = img.raw_pixels();
         gl::TexImage2D(
             gl::TEXTURE_CUBE_MAP_POSITIVE_X + i as u32,
-            0, gl::RGB as i32, img.width() as i32, img.height() as i32,
-            0, gl::RGB, gl::UNSIGNED_BYTE,
-            &data[0] as *const u8 as *const c_void);
+            0,
+            gl::RGB as i32,
+            img.width() as i32,
+            img.height() as i32,
+            0,
+            gl::RGB,
+            gl::UNSIGNED_BYTE,
+            &data[0] as *const u8 as *const c_void,
+        );
     }
 
     gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
