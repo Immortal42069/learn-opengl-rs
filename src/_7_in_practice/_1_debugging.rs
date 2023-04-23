@@ -134,7 +134,7 @@ pub fn main_7_1() {
         if flags as u32 & gl::CONTEXT_FLAG_DEBUG_BIT != 0 {
             gl::Enable(gl::DEBUG_OUTPUT);
             gl::Enable(gl::DEBUG_OUTPUT_SYNCHRONOUS); // makes sure errors are displayed synchronously
-            gl::DebugMessageCallback(glDebugOutput, ptr::null());
+            gl::DebugMessageCallback(Some(glDebugOutput), ptr::null());
             gl::DebugMessageControl(gl::DONT_CARE, gl::DONT_CARE, gl::DONT_CARE, 0, ptr::null(), gl::TRUE);
         }
         else {
