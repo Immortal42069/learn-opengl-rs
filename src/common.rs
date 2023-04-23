@@ -14,8 +14,8 @@ use image;
 use image::GenericImage;
 use image::DynamicImage::*;
 
-use camera::Camera;
-use camera::Camera_Movement::*;
+use crate::camera::Camera;
+use crate::camera::Camera_Movement::*;
 
 /// Event processing function as introduced in 1.7.4 (Camera Class) and used in
 /// most later tutorials

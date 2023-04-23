@@ -7,10 +7,10 @@ extern crate gl;
 
 use std::ffi::CStr;
 
-use common::{process_events, processInput};
-use shader::Shader;
-use camera::Camera;
-use model::Model;
+use crate::common::{process_events, processInput};
+use crate::shader::Shader;
+use crate::camera::Camera;
+use crate::model::Model;
 
 use cgmath::{Matrix4, vec3, Point3, Deg, perspective};
 

@@ -13,9 +13,9 @@ use std::os::raw::c_void;
 use std::path::Path;
 use std::ffi::CStr;
 
-use common::{process_events, processInput};
-use shader::Shader;
-use camera::Camera;
+use crate::common::{process_events, processInput};
+use crate::shader::Shader;
+use crate::camera::Camera;
 
 use image;
 use image::GenericImage;

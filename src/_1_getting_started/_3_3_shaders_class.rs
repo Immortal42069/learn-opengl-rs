@@ -10,7 +10,7 @@ use std::ptr;
 use std::mem;
 use std::os::raw::c_void;
 
-use shader::Shader;
+use crate::shader::Shader;
 
 // settings
 const SCR_WIDTH: u32 = 800;

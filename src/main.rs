@@ -16,37 +16,37 @@ mod utils;
 #[cfg(feature = "chapter-1")]
 mod _1_getting_started;
 #[cfg(feature = "chapter-1")]
-use _1_getting_started::*;
+use crate::_1_getting_started::*;
 
 #[cfg(feature = "chapter-2")]
 mod _2_lighting;
 #[cfg(feature = "chapter-2")]
-use _2_lighting::*;
+use crate::_2_lighting::*;
 
 #[cfg(feature = "chapter-3")]
 mod _3_model_loading;
 #[cfg(feature = "chapter-3")]
-use _3_model_loading::*;
+use crate::_3_model_loading::*;
 
 #[cfg(feature = "chapter-4")]
 mod _4_advanced_opengl;
 #[cfg(feature = "chapter-4")]
-use _4_advanced_opengl::*;
+use crate::_4_advanced_opengl::*;
 
 #[cfg(feature = "chapter-5")]
 mod _5_advanced_lighting;
 #[cfg(feature = "chapter-5")]
-use _5_advanced_lighting::*;
+use crate::_5_advanced_lighting::*;
 
 #[cfg(feature = "chapter-6")]
 mod _6_pbr;
 #[cfg(feature = "chapter-6")]
-use _6_pbr::*;
+use crate::_6_pbr::*;
 
 #[cfg(feature = "chapter-7")]
 mod _7_in_practice;
 #[cfg(feature = "chapter-7")]
-use _7_in_practice::*;
+use crate::_7_in_practice::*;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();

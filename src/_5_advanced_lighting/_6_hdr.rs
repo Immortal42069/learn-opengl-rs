@@ -17,10 +17,10 @@ use image;
 use image::GenericImage;
 use image::DynamicImage::*;
 
-use common::{process_events};
-use shader::Shader;
-use camera::Camera;
-use camera::Camera_Movement::*;
+use crate::common::{process_events};
+use crate::shader::Shader;
+use crate::camera::Camera;
+use crate::camera::Camera_Movement::*;
 
 use cgmath::{Matrix4, vec3, Vector3, Deg, perspective, Point3};
 use cgmath::prelude::*;

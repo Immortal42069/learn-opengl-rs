@@ -16,7 +16,7 @@ use cgmath::{Vector2};
 extern crate num;
 use self::num::range_step;
 
-use shader::Shader;
+use crate::shader::Shader;
 
 // settings
 const SCR_WIDTH: u32 = 1280;

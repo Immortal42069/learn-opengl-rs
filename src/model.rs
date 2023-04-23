@@ -11,8 +11,8 @@ use image::DynamicImage::*;
 use image::GenericImage;
 use tobj;
 
-use mesh::{ Mesh, Texture, Vertex };
-use shader::Shader;
+use crate::mesh::{ Mesh, Texture, Vertex };
+use crate::shader::Shader;
 
 #[derive(Default)]
 pub struct Model {

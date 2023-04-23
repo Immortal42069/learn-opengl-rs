@@ -15,9 +15,9 @@ use self::gl::types::*;
 use cgmath::{Matrix4, vec3, Deg, perspective, Point3};
 use cgmath::prelude::*;
 
-use common::{process_events, processInput};
-use shader::Shader;
-use camera::Camera;
+use crate::common::{process_events, processInput};
+use crate::shader::Shader;
+use crate::camera::Camera;
 
 // settings
 const SCR_WIDTH: u32 = 1280;

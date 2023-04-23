@@ -12,7 +12,7 @@ use std::os::raw::c_void;
 use std::path::Path;
 use std::ffi::CStr;
 
-use shader::Shader;
+use crate::shader::Shader;
 
 use image;
 use image::GenericImage;

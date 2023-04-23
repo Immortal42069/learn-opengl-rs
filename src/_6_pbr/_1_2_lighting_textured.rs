@@ -14,9 +14,9 @@ use std::os::raw::c_void;
 use std::ffi::{CStr, CString};
 use std::f32::consts::PI;
 
-use common::{process_events, processInput, loadTexture};
-use shader::Shader;
-use camera::Camera;
+use crate::common::{process_events, processInput, loadTexture};
+use crate::shader::Shader;
+use crate::camera::Camera;
 
 use cgmath::{Matrix4, vec3, Vector3, vec2, Deg, perspective, Point3};
 use cgmath::prelude::*;

@@ -2,6 +2,7 @@
 authors = ["Benjamin Wasty <benny.wasty@gmail.com>"]
 name = "learn-opengl-rs"
 version = "0.6.1"
+edition = "2021"
 
 [dependencies]
 cgmath = "0.16.1"

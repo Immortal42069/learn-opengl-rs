@@ -10,10 +10,10 @@ extern crate gl;
 
 use cgmath::{Matrix4, Deg, vec3, Point3, perspective};
 
-use common::{process_events, processInput};
-use shader::Shader;
-use camera::Camera;
-use model::Model;
+use crate::common::{process_events, processInput};
+use crate::shader::Shader;
+use crate::camera::Camera;
+use crate::model::Model;
 
 // settings
 const SCR_WIDTH: u32 = 1280;

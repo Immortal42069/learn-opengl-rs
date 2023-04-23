@@ -11,9 +11,9 @@ use std::mem;
 use std::os::raw::c_void;
 use std::ffi::CStr;
 
-use common::{process_events, processInput};
-use shader::Shader;
-use camera::Camera;
+use crate::common::{process_events, processInput};
+use crate::shader::Shader;
+use crate::camera::Camera;
 
 use cgmath::{Matrix4, Vector3, vec3, Point3, Deg, perspective};
 use cgmath::prelude::*;

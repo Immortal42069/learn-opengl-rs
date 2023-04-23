@@ -12,10 +12,10 @@ use std::mem;
 use std::os::raw::c_void;
 use std::ptr;
 
-use common::{process_events, processInput};
-use shader::Shader;
-use camera::Camera;
-use model::Model;
+use crate::common::{process_events, processInput};
+use crate::shader::Shader;
+use crate::camera::Camera;
+use crate::model::Model;
 
 use cgmath::{Matrix4, vec3, Point3, Vector4, Deg, perspective};
 use cgmath::prelude::*;

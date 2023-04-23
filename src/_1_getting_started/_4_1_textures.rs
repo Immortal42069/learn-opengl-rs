@@ -11,7 +11,7 @@ use std::mem;
 use std::os::raw::c_void;
 use std::path::Path;
 
-use shader::Shader;
+use crate::shader::Shader;
 
 extern crate image;
 use image::GenericImage;
