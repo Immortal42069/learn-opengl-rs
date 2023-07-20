@@ -1,9 +1,7 @@
 #![allow(non_upper_case_globals)]
-extern crate glfw;
-use self::glfw::{Action, Context, Key};
+use glfw::{Action, Context, Key};
 
-extern crate gl;
-use self::gl::types::*;
+use gl::types::*;
 
 use std::ffi::CStr;
 use std::mem;
@@ -14,10 +12,8 @@ use std::sync::mpsc::Receiver;
 
 use crate::shader::Shader;
 
-use image::GenericImage;
-
 use cgmath::prelude::*;
-use cgmath::{perspective, vec3, Deg, Matrix4, Rad, Vector3};
+use cgmath::{perspective, vec3, Deg, Matrix4, Vector3};
 
 // settings
 const SCR_WIDTH: u32 = 800;
@@ -45,7 +41,7 @@ pub fn main_1_6_3() {
 
     // gl: load all OpenGL function pointers
     // ---------------------------------------
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+    gl::load_with(|symbol| window.get_proc_address(symbol));
 
     let (ourShader, VBO, VAO, texture1, texture2, cubePositions) = unsafe {
         // configure global opengl state
@@ -118,11 +114,11 @@ pub fn main_1_6_3() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32); // set texture wrapping to gl::REPEAT (default wrapping method)
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
         // set texture filtering parameters
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
         let img = image::open(Path::new("resources/textures/container.jpg")).expect("Failed to load texture");
-        let data = img.raw_pixels();
+        let data = img.as_bytes();
         gl::TexImage2D(
             gl::TEXTURE_2D,
             0,
@@ -143,12 +139,12 @@ pub fn main_1_6_3() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32); // set texture wrapping to gl::REPEAT (default wrapping method)
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
         // set texture filtering parameters
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
         let img = image::open(Path::new("resources/textures/awesomeface.png")).expect("Failed to load texture");
         let img = img.flipv(); // flip loaded texture on the y-axis.
-        let data = img.raw_pixels();
+        let data = img.as_bytes();
         // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
         gl::TexImage2D(
             gl::TEXTURE_2D,
@@ -195,16 +191,11 @@ pub fn main_1_6_3() {
             ourShader.useProgram();
 
             // create transformations
-            // NOTE: cgmath requires axis vectors to be normalized!
-            let model: Matrix4<f32> =
-                Matrix4::from_axis_angle(vec3(0.5, 1.0, 0.0).normalize(), Rad(glfw.get_time() as f32));
             let view: Matrix4<f32> = Matrix4::from_translation(vec3(0., 0., -3.));
             let projection: Matrix4<f32> = perspective(Deg(45.0), SCR_WIDTH as f32 / SCR_HEIGHT as f32, 0.1, 100.0);
             // retrieve the matrix uniform locations
-            let modelLoc = gl::GetUniformLocation(ourShader.ID, c_str!("model").as_ptr());
             let viewLoc = gl::GetUniformLocation(ourShader.ID, c_str!("view").as_ptr());
-            // pass them to the shaders (3 different ways)
-            gl::UniformMatrix4fv(modelLoc, 1, gl::FALSE, model.as_ptr());
+            // pass them to the shaders (2 different ways)
             gl::UniformMatrix4fv(viewLoc, 1, gl::FALSE, &view[0][0]);
             // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
             ourShader.setMat4(c_str!("projection"), &projection);

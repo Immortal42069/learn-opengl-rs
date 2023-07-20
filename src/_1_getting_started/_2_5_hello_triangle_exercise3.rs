@@ -1,9 +1,7 @@
 #![allow(non_upper_case_globals)]
-extern crate glfw;
-use self::glfw::{Action, Context, Key};
+use glfw::{Action, Context, Key};
 
-extern crate gl;
-use self::gl::types::*;
+use gl::types::*;
 
 use std::ffi::CString;
 use std::mem;
@@ -62,7 +60,7 @@ pub fn main_1_2_5() {
 
     // gl: load all OpenGL function pointers
     // ---------------------------------------
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+    gl::load_with(|symbol| window.get_proc_address(symbol));
 
     let (shaderProgramOrange, shaderProgramYellow, mut VBOs, mut VAOs) = unsafe {
         // build and compile our shader program
@@ -73,13 +71,13 @@ pub fn main_1_2_5() {
         let fragmentShaderYellow = gl::CreateShader(gl::FRAGMENT_SHADER); // the second fragment shader that outputs the color yellow
         let shaderProgramOrange = gl::CreateProgram();
         let shaderProgramYellow = gl::CreateProgram(); // the second shader program
-        let c_str_vert = CString::new(vertexShaderSource.as_bytes()).unwrap();
+        let c_str_vert = CString::new(vertexShaderSource).unwrap();
         gl::ShaderSource(vertexShader, 1, &c_str_vert.as_ptr(), ptr::null());
         gl::CompileShader(vertexShader);
-        let c_str_frag_orange = CString::new(fragmentShaderSource.as_bytes()).unwrap();
+        let c_str_frag_orange = CString::new(fragmentShaderSource).unwrap();
         gl::ShaderSource(fragmentShaderOrange, 1, &c_str_frag_orange.as_ptr(), ptr::null());
         gl::CompileShader(fragmentShaderOrange);
-        let c_str_frag_yellow = CString::new(fragmentShader2Source.as_bytes()).unwrap();
+        let c_str_frag_yellow = CString::new(fragmentShader2Source).unwrap();
         gl::ShaderSource(fragmentShaderYellow, 1, &c_str_frag_yellow.as_ptr(), ptr::null());
         gl::CompileShader(fragmentShaderYellow);
         // link the first program object

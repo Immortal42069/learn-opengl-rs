@@ -9,7 +9,6 @@ extern crate glfw;
 use self::glfw::{Action, Key};
 
 use image::DynamicImage::*;
-use image::GenericImage;
 
 use crate::camera::Camera;
 use crate::camera::Camera_Movement::*;
@@ -88,9 +87,10 @@ pub unsafe fn loadTexture(path: &str) -> u32 {
         ImageLumaA8(_) => gl::RG,
         ImageRgb8(_) => gl::RGB,
         ImageRgba8(_) => gl::RGBA,
+        _ => todo!()
     };
 
-    let data = img.raw_pixels();
+    let data = img.as_bytes();
 
     gl::BindTexture(gl::TEXTURE_2D, textureID);
     gl::TexImage2D(

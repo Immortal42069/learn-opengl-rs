@@ -1,9 +1,7 @@
 #![allow(non_upper_case_globals)]
-extern crate glfw;
-use self::glfw::{Action, Context, Key};
+use glfw::{Action, Context, Key};
 
-extern crate gl;
-use self::gl::types::*;
+use gl::types::*;
 
 use std::ffi::CStr;
 use std::mem;
@@ -13,8 +11,6 @@ use std::ptr;
 use std::sync::mpsc::Receiver;
 
 use crate::shader::Shader;
-
-use image::GenericImage;
 
 use cgmath::prelude::*;
 use cgmath::{perspective, vec3, Deg, Matrix4, Rad};
@@ -45,7 +41,7 @@ pub fn main_1_6_2() {
 
     // gl: load all OpenGL function pointers
     // ---------------------------------------
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+    gl::load_with(|symbol| window.get_proc_address(symbol));
 
     let (ourShader, VBO, VAO, texture1, texture2) = unsafe {
         // configure global opengl state
@@ -105,11 +101,11 @@ pub fn main_1_6_2() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32); // set texture wrapping to gl::REPEAT (default wrapping method)
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
         // set texture filtering parameters
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
         let img = image::open(Path::new("resources/textures/container.jpg")).expect("Failed to load texture");
-        let data = img.raw_pixels();
+        let data = img.as_bytes();
         gl::TexImage2D(
             gl::TEXTURE_2D,
             0,
@@ -130,12 +126,12 @@ pub fn main_1_6_2() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32); // set texture wrapping to gl::REPEAT (default wrapping method)
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
         // set texture filtering parameters
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
         let img = image::open(Path::new("resources/textures/awesomeface.png")).expect("Failed to load texture");
         let img = img.flipv(); // flip loaded texture on the y-axis.
-        let data = img.raw_pixels();
+        let data = img.as_bytes();
         // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
         gl::TexImage2D(
             gl::TEXTURE_2D,

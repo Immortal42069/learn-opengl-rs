@@ -14,8 +14,6 @@ use std::sync::mpsc::Receiver;
 
 use crate::shader::Shader;
 
-use image::GenericImage;
-
 use cgmath::prelude::*;
 use cgmath::{perspective, vec3, Deg, Matrix4, Point3, Vector3};
 
@@ -120,7 +118,7 @@ pub fn main_1_7_1() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
         let img = image::open(Path::new("resources/textures/container.jpg")).expect("Failed to load texture");
-        let data = img.raw_pixels();
+        let data = img.as_bytes();
         gl::TexImage2D(
             gl::TEXTURE_2D,
             0,
@@ -146,7 +144,7 @@ pub fn main_1_7_1() {
         // load image, create texture and generate mipmaps
         let img = image::open(Path::new("resources/textures/awesomeface.png")).expect("Failed to load texture");
         let img = img.flipv(); // flip loaded texture on the y-axis.
-        let data = img.raw_pixels();
+        let data = img.as_bytes();
         // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
         gl::TexImage2D(
             gl::TEXTURE_2D,
@@ -202,7 +200,7 @@ pub fn main_1_7_1() {
             let camX = glfw.get_time().sin() as f32 * radius;
             let camZ = glfw.get_time().cos() as f32 * radius;
             let view: Matrix4<f32> =
-                Matrix4::look_at(Point3::new(camX, 0.0, camZ), Point3::new(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
+                Matrix4::look_at_rh(Point3::new(camX, 0.0, camZ), Point3::new(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
             ourShader.setMat4(c_str!("view"), &view);
 
             // render boxes

@@ -5,10 +5,10 @@ version = "0.6.1"
 edition = "2021"
 
 [dependencies]
-cgmath = "0.16.1"
+cgmath = "0.18.0"
 gl = "0.14.0"
 glfw = "0.51.0"
-image = "0.19.0"
+image = "0.24.6"
 # only needed from chapter 3 on
 tobj = "0.1.6"
 num = "0.2.0"

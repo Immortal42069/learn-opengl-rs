@@ -21,7 +21,6 @@ use cgmath::prelude::*;
 use cgmath::{perspective, vec3, Deg, Matrix4, Point3};
 
 use image::DynamicImage::*;
-use image::GenericImage;
 
 // settings
 const SCR_WIDTH: u32 = 1280;
@@ -291,9 +290,10 @@ pub unsafe fn loadTexture(path: &str) -> u32 {
         ImageLumaA8(_) => gl::RG,
         ImageRgb8(_) => gl::RGB,
         ImageRgba8(_) => gl::RGBA,
+        _ => todo!()
     };
 
-    let data = img.raw_pixels();
+    let data = img.as_bytes();
 
     gl::BindTexture(gl::TEXTURE_2D, textureID);
     gl::TexImage2D(

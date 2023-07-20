@@ -1,9 +1,7 @@
 #![allow(non_upper_case_globals)]
-extern crate glfw;
-use self::glfw::{Action, Context, Key};
+use glfw::{Action, Context, Key};
 
-extern crate gl;
-use self::gl::types::*;
+use gl::types::*;
 
 use std::mem;
 use std::os::raw::c_void;
@@ -12,9 +10,6 @@ use std::ptr;
 use std::sync::mpsc::Receiver;
 
 use crate::shader::Shader;
-
-extern crate image;
-use image::GenericImage;
 
 // settings
 const SCR_WIDTH: u32 = 800;
@@ -42,7 +37,7 @@ pub fn main_1_4_1() {
 
     // gl: load all OpenGL function pointers
     // ---------------------------------------
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+    gl::load_with(|symbol| window.get_proc_address(symbol));
 
     let (ourShader, VBO, VAO, EBO, texture) = unsafe {
         // build and compile our shader program
@@ -109,11 +104,11 @@ pub fn main_1_4_1() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32); // set texture wrapping to gl::REPEAT (default wrapping method)
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
         // set texture filtering parameters
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
         let img = image::open(Path::new("resources/textures/container.jpg")).expect("Failed to load texture");
-        let data = img.raw_pixels();
+        let data = img.as_bytes();
         gl::TexImage2D(
             gl::TEXTURE_2D,
             0,

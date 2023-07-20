@@ -1,7 +1,4 @@
-extern crate glfw;
-use self::glfw::{Action, Context, Key};
-
-extern crate gl;
+use glfw::{Action, Context, Key};
 
 use std::sync::mpsc::Receiver;
 
@@ -30,7 +27,7 @@ pub fn main_1_1_2() {
 
     // gl: load all OpenGL function pointers
     // ---------------------------------------
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+    gl::load_with(|symbol| window.get_proc_address(symbol));
 
     // render loop
     // -----------

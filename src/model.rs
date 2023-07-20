@@ -7,7 +7,6 @@ use std::path::Path;
 use cgmath::{vec2, vec3};
 
 use image::DynamicImage::*;
-use image::GenericImage;
 
 use crate::mesh::{Mesh, Texture, Vertex};
 use crate::shader::Shader;
@@ -121,9 +120,10 @@ unsafe fn TextureFromFile(path: &str, directory: &str) -> u32 {
         ImageLumaA8(_) => gl::RG,
         ImageRgb8(_) => gl::RGB,
         ImageRgba8(_) => gl::RGBA,
+        _ => todo!()
     };
 
-    let data = img.raw_pixels();
+    let data = img.as_bytes();
 
     gl::BindTexture(gl::TEXTURE_2D, textureID);
     gl::TexImage2D(

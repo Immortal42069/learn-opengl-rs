@@ -2,8 +2,7 @@
 use std::ffi::{CStr, CString};
 use std::fs::File;
 use std::io::Read;
-use std::ptr;
-use std::str;
+use std::{ptr, str};
 
 use gl::types::*;
 
@@ -12,6 +11,12 @@ use cgmath::{Matrix, Matrix4, Vector3};
 
 pub struct Shader {
     pub ID: u32,
+}
+
+enum ShaderType {
+    Shader(String),
+    Program,
+    
 }
 
 /// NOTE: mixture of `shader_s.h` and `shader_m.h` (the latter just contains
@@ -32,8 +37,8 @@ impl Shader {
             .read_to_string(&mut fragmentCode)
             .expect("Failed to read fragment shader");
 
-        let vShaderCode = CString::new(vertexCode.as_bytes()).unwrap();
-        let fShaderCode = CString::new(fragmentCode.as_bytes()).unwrap();
+        let vShaderCode = CString::new(vertexCode).unwrap();
+        let fShaderCode = CString::new(fragmentCode).unwrap();
 
         // 2. compile shaders
         unsafe {
@@ -41,18 +46,18 @@ impl Shader {
             let vertex = gl::CreateShader(gl::VERTEX_SHADER);
             gl::ShaderSource(vertex, 1, &vShaderCode.as_ptr(), ptr::null());
             gl::CompileShader(vertex);
-            shader.checkCompileErrors(vertex, "VERTEX");
+            shader.checkCompileErrors(vertex, ShaderType::Shader(String::from("VERTEX")));
             // fragment Shader
             let fragment = gl::CreateShader(gl::FRAGMENT_SHADER);
             gl::ShaderSource(fragment, 1, &fShaderCode.as_ptr(), ptr::null());
             gl::CompileShader(fragment);
-            shader.checkCompileErrors(fragment, "FRAGMENT");
+            shader.checkCompileErrors(fragment, ShaderType::Shader(String::from("FRAGMENT")));
             // shader Program
             let ID = gl::CreateProgram();
             gl::AttachShader(ID, vertex);
             gl::AttachShader(ID, fragment);
             gl::LinkProgram(ID);
-            shader.checkCompileErrors(ID, "PROGRAM");
+            shader.checkCompileErrors(ID, ShaderType::Program);
             // delete the shaders as they're linked into our program now and no longer necessary
             gl::DeleteShader(vertex);
             gl::DeleteShader(fragment);
@@ -96,32 +101,32 @@ impl Shader {
 
     /// utility function for checking shader compilation/linking errors.
     /// ------------------------------------------------------------------------
-    unsafe fn checkCompileErrors(&self, shader: u32, type_: &str) {
+    unsafe fn checkCompileErrors(&self, shader: u32, type_: ShaderType) {
         let mut success = gl::FALSE as GLint;
         let mut infoLog = Vec::with_capacity(1024);
-        infoLog.set_len(1024 - 1); // subtract 1 to skip the trailing null character
-        if type_ != "PROGRAM" {
-            gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut success);
-            if success != gl::TRUE as GLint {
-                gl::GetShaderInfoLog(shader, 1024, ptr::null_mut(), infoLog.as_mut_ptr() as *mut GLchar);
-                println!(
-                    "ERROR::SHADER_COMPILATION_ERROR of type: {}\n{}\n \
-                          -- --------------------------------------------------- -- ",
-                    type_,
-                    str::from_utf8(&infoLog).unwrap()
-                );
+        let mut len: GLsizei = 0;
+        match type_ {
+            ShaderType::Shader(variant) => {
+                gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut success);
+                if success != gl::TRUE as GLint {
+                    gl::GetShaderInfoLog(shader, 1024, &mut len, infoLog.as_mut_ptr() as *mut GLchar);
+                    infoLog.set_len(len.try_into().unwrap());
+                    println!(
+                        "ERROR::SHADER::{}::COMPILATION_FAILED\n{}",
+                        variant,
+                        str::from_utf8(&infoLog).unwrap()
+                    );
+                }
             }
-        } else {
-            gl::GetProgramiv(shader, gl::LINK_STATUS, &mut success);
-            if success != gl::TRUE as GLint {
-                gl::GetProgramInfoLog(shader, 1024, ptr::null_mut(), infoLog.as_mut_ptr() as *mut GLchar);
-                println!(
-                    "ERROR::PROGRAM_LINKING_ERROR of type: {}\n{}\n \
-                          -- --------------------------------------------------- -- ",
-                    type_,
-                    str::from_utf8(&infoLog).unwrap()
-                );
-            }
+            ShaderType::Program => {
+                gl::GetProgramiv(shader, gl::LINK_STATUS, &mut success);
+                if success != gl::TRUE as GLint {
+                    gl::GetProgramInfoLog(shader, 1024, &mut len, infoLog.as_mut_ptr() as *mut GLchar);
+                    infoLog.set_len(len.try_into().unwrap());
+                    println!("ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n{}", str::from_utf8(&infoLog).unwrap());
+                }
+            
+            }   
         }
     }
 
@@ -155,17 +160,17 @@ impl Shader {
             let vertex = gl::CreateShader(gl::VERTEX_SHADER);
             gl::ShaderSource(vertex, 1, &vShaderCode.as_ptr(), ptr::null());
             gl::CompileShader(vertex);
-            shader.checkCompileErrors(vertex, "VERTEX");
+            shader.checkCompileErrors(vertex, ShaderType::Shader(String::from("VERTEX")));
             // fragment Shader
             let fragment = gl::CreateShader(gl::FRAGMENT_SHADER);
             gl::ShaderSource(fragment, 1, &fShaderCode.as_ptr(), ptr::null());
             gl::CompileShader(fragment);
-            shader.checkCompileErrors(fragment, "FRAGMENT");
+            shader.checkCompileErrors(fragment, ShaderType::Shader(String::from("FRAGMENT")));
             // geometry shader
             let geometry = gl::CreateShader(gl::GEOMETRY_SHADER);
             gl::ShaderSource(geometry, 1, &gShaderCode.as_ptr(), ptr::null());
             gl::CompileShader(geometry);
-            shader.checkCompileErrors(geometry, "GEOMETRY");
+            shader.checkCompileErrors(geometry, ShaderType::Shader(String::from("GEOMETRY")));
 
             // shader Program
             let ID = gl::CreateProgram();
@@ -173,7 +178,7 @@ impl Shader {
             gl::AttachShader(ID, fragment);
             gl::AttachShader(ID, geometry);
             gl::LinkProgram(ID);
-            shader.checkCompileErrors(ID, "PROGRAM");
+            shader.checkCompileErrors(ID, ShaderType::Program);
             // delete the shaders as they're linked into our program now and no longer necessary
             gl::DeleteShader(vertex);
             gl::DeleteShader(fragment);

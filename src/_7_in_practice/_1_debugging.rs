@@ -15,8 +15,6 @@ use std::sync::mpsc::Receiver;
 
 use crate::shader::Shader;
 
-use image::GenericImage;
-
 use cgmath::prelude::*;
 use cgmath::{perspective, vec3, Deg, Matrix4, Rad};
 
@@ -220,7 +218,7 @@ pub fn main_7_1() {
         gl::GenTextures(1, &mut texture);
         gl::BindTexture(gl::TEXTURE_2D, texture);
         let img = image::open(Path::new("resources/textures/wood.png")).expect("Failed to load texture");
-        let data = img.raw_pixels();
+        let data = img.as_bytes();
         gl::TexImage2D(
             gl::TEXTURE_2D,
             0,

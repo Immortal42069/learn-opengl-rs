@@ -14,7 +14,6 @@ use std::path::Path;
 use std::ptr;
 
 use image::DynamicImage::*;
-use image::GenericImage;
 
 use crate::camera::Camera;
 use crate::camera::Camera_Movement::*;
@@ -265,9 +264,10 @@ pub unsafe fn loadTexture(path: &str, gammaCorrection: bool) -> u32 {
         ImageLumaA8(_) => (gl::RG, gl::RG),
         ImageRgb8(_) => (if gammaCorrection { gl::SRGB } else { gl::RGB }, gl::RGB),
         ImageRgba8(_) => (if gammaCorrection { gl::SRGB_ALPHA } else { gl::RGB }, gl::RGBA),
+        _ => todo!()
     };
 
-    let data = img.raw_pixels();
+    let data = img.as_bytes();
 
     gl::BindTexture(gl::TEXTURE_2D, textureID);
     gl::TexImage2D(

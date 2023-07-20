@@ -1,9 +1,7 @@
 #![allow(non_upper_case_globals)]
-extern crate glfw;
-use self::glfw::{Action, Context, Key};
+use glfw::{Action, Context, Key};
 
-extern crate gl;
-use self::gl::types::*;
+use gl::types::*;
 
 use std::mem;
 use std::os::raw::c_void;
@@ -38,7 +36,7 @@ pub fn main_1_3_3() {
 
     // gl: load all OpenGL function pointers
     // ---------------------------------------
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+    gl::load_with(|symbol| window.get_proc_address(symbol));
 
     let (ourShader, VAO) = unsafe {
         let ourShader =
